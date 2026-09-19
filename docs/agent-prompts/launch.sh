@@ -132,6 +132,24 @@ load_pool() {
 }
 
 # --- worktrees -------------------------------------------------------------
+
+# Agents are weak models and forget instructions; a hook they cannot bypass is
+# the only reliable way to keep provenance on machine-written commits.
+# Worktrees share the common git dir, so installing once covers every branch.
+install_coauthor_hook() {
+  local hook="$REPO/.git/hooks/prepare-commit-msg"
+  cat >"$hook" <<'HOOK'
+#!/usr/bin/env bash
+set -euo pipefail
+MSG_FILE="$1"
+LINE="Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
+grep -qF "$LINE" "$MSG_FILE" && exit 0
+printf '\n%s\n' "$LINE" >>"$MSG_FILE"
+HOOK
+  chmod +x "$hook"
+  log "co-authorship hook installed (covers all worktrees)"
+}
+
 up() {
   if [[ ! -d "$REPO/.git" ]]; then
     log "initializing git repo (worktrees require one)"
@@ -140,6 +158,7 @@ up() {
     git -C "$REPO" -c user.email=agent@local -c user.name=agent \
       commit -qm "chore: foundation baseline before wave-2 fan-out"
   fi
+  install_coauthor_hook
   while read -r slug; do
     local wt="$REPO/../yourcrm-$slug"
     if [[ -d "$wt" ]]; then
