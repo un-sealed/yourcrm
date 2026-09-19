@@ -12,6 +12,31 @@ Status legend: **[!]** breaks a feature if skipped · **[~]** correctness/qualit
 
 ---
 
+## 0. AI provider cannot do multi-step tool loops — affects two modules
+
+`AI_DEFAULT_MODEL=deepseek-v4-flash` runs in **thinking mode**. Replaying its
+assistant turn for a second step returns:
+
+```
+400 "The reasoning_content in the thinking mode must be passed back to the API"
+```
+
+Neither `AiMessage`/`AiProviderMessage` nor
+`packages/crm/src/ai-assistant/providers/openai-compatible-ai-provider.ts`
+carries `reasoning_content`, so any loop past one tool round-trip fails.
+
+**This hits both `ai-agents` and the already-merged Ask-Your-CRM assistant.**
+`ai-core`'s live verification did a single tool call, which is why it passed.
+
+Two ways out:
+1. Add `reasoningContent` to the assistant-message type and round-trip it in
+   the provider's request/response mapping (the real fix).
+2. Use a non-thinking model — but on the current agentrouter key
+   `gpt-5.6-sol` returns `402 Budget pool quota exhausted` and `glm-5.3` has
+   no channel, so `deepseek-v4-flash` is the only working option today.
+
+Found by `ai-agents` doing a real multi-step run. Single-step calls work fine.
+
 ## 1. Wiring that makes shipped features actually work
 
 **[!] `subscribeSalesSequenceExitWatcher()` is never called.**
