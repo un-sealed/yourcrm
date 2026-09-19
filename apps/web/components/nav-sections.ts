@@ -44,6 +44,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { href: "/app/search", label: "Search" },
       { href: "/app/import-export", label: "Import / Export" },
       { href: "/app/integrations", label: "Integrations" },
+      { href: "/app/custom-objects", label: "Custom Objects" },
       { href: "/app/ai", label: "AI Assistant" },
       { href: "/app/settings", label: "Settings" },
     ],

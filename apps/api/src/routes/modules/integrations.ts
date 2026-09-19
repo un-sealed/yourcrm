@@ -19,6 +19,7 @@ import {
 import { getDb, writeAudit } from "@yourcrm/database"
 import { createIntegrationsRepository } from "@yourcrm/database/src/repositories/integrations-repository"
 import { getEventBus } from "@yourcrm/events"
+import { getIntegrationProviderRegistry } from "@yourcrm/integrations"
 import { PermissionDeniedError } from "@yourcrm/permissions"
 import { errorEnvelope, paginatedEnvelopeSchema } from "@yourcrm/validation"
 import { Hono } from "hono"
@@ -82,7 +83,12 @@ export type IntegrationsRouteDeps = {
  * (verified: TS2307) and the catalogue is this explicit list.
  */
 function defaultIntegrationProviders(): IntegrationProviderPort[] {
-  return [createGenericWebhookIntegrationProvider()]
+  // Vendor adapters (email, whatsapp, calling, ...) self-register into the
+  // registry at import time, so the catalogue must come from the registry —
+  // a hardcoded list silently hides every provider a later module adds.
+  const registered = getIntegrationProviderRegistry().list() as IntegrationProviderPort[]
+  const generic = createGenericWebhookIntegrationProvider()
+  return registered.some((p) => p.id === generic.id) ? registered : [...registered, generic]
 }
 
 function defaultService(providers: IntegrationProviderPort[]): IntegrationsService {

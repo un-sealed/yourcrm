@@ -75,9 +75,14 @@ export const CrmEvents = {
 export const CommunicationEvents = {
   EmailReceived: "email.received",
   EmailSent: "email.sent",
+  EmailBounced: "email.bounced",
+  EmailThreadLinked: "email.thread_linked",
   MessageReceived: "message.received",
   MessageSent: "message.sent",
+  CallStarted: "call.started",
+  CallAnswered: "call.answered",
   CallCompleted: "call.completed",
+  CallRecordingReady: "call.recording_ready",
   CalendarEventSynced: "calendar.event_synced",
 } as const
 

@@ -18,6 +18,11 @@ import {
   openApiPaths as calendarOpenApiPaths,
 } from "./calendar"
 import {
+  basePath as callingBasePath,
+  createRoutes as createCallingRoutes,
+  openApiPaths as callingOpenApiPaths,
+} from "./calling"
+import {
   basePath as companiesBasePath,
   createRoutes as createCompaniesRoutes,
   openApiPaths as companiesOpenApiPaths,
@@ -37,6 +42,11 @@ import {
   createRoutes as createDealsRoutes,
   openApiPaths as dealsOpenApiPaths,
 } from "./deals"
+import {
+  basePath as emailBasePath,
+  createRoutes as createEmailRoutes,
+  openApiPaths as emailOpenApiPaths,
+} from "./email"
 import {
   basePath as filesBasePath,
   createRoutes as createFilesRoutes,
@@ -107,6 +117,11 @@ import {
   createRoutes as createTasksRoutes,
   openApiPaths as tasksOpenApiPaths,
 } from "./tasks"
+import {
+  basePath as whatsappBasePath,
+  createRoutes as createWhatsappRoutes,
+  openApiPaths as whatsappOpenApiPaths,
+} from "./whatsapp"
 
 /**
  * Module registry — the single list `routes/v1.ts` mounts. Module agents
@@ -118,10 +133,12 @@ export const moduleRoutes: ModuleDefinition[] = [
   { path: activitiesBasePath, createRoutes: createActivitiesRoutes, openApiPaths: activitiesOpenApiPaths },
   { path: automationBasePath, createRoutes: createAutomationRoutes, openApiPaths: automationOpenApiPaths },
   { path: calendarBasePath, createRoutes: createCalendarRoutes, openApiPaths: calendarOpenApiPaths },
+  { path: callingBasePath, createRoutes: createCallingRoutes, openApiPaths: callingOpenApiPaths },
   { path: companiesBasePath, createRoutes: createCompaniesRoutes, openApiPaths: companiesOpenApiPaths },
   { path: customObjectsBasePath, createRoutes: createCustomObjectsRoutes, openApiPaths: customObjectsOpenApiPaths },
   { path: dashboardsBasePath, createRoutes: createDashboardsRoutes, openApiPaths: dashboardsOpenApiPaths },
   { path: dealsBasePath, createRoutes: createDealsRoutes, openApiPaths: dealsOpenApiPaths },
+  { path: emailBasePath, createRoutes: createEmailRoutes, openApiPaths: emailOpenApiPaths },
   { path: filesBasePath, createRoutes: createFilesRoutes, openApiPaths: filesOpenApiPaths },
   { path: formsBasePath, createRoutes: createFormsRoutes, openApiPaths: formsOpenApiPaths },
   { path: importExportBasePath, createRoutes: createImportExportRoutes, openApiPaths: importExportOpenApiPaths },
@@ -136,4 +153,5 @@ export const moduleRoutes: ModuleDefinition[] = [
   { path: searchBasePath, createRoutes: createSearchRoutes, openApiPaths: searchOpenApiPaths },
   { path: systemBasePath, createRoutes: createSystemRoutes, openApiPaths: systemOpenApiPaths },
   { path: tasksBasePath, createRoutes: createTasksRoutes, openApiPaths: tasksOpenApiPaths },
+  { path: whatsappBasePath, createRoutes: createWhatsappRoutes, openApiPaths: whatsappOpenApiPaths },
 ]
