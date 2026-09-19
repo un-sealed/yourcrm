@@ -53,6 +53,7 @@ barrel, then a few `emit` calls in the owning service.
 | Security / Teams | `security.setting_changed` `user.invited` `role.updated` `team.member_added` | 40, 41 |
 | AI governance | `ai.action_rejected` `ai.action_applied` `ai.policy_changed` `ai.kill_switch_enabled` | 38 §9 |
 | Portal | `portal.login` `portal.quote_accepted` `portal.ticket_created` | 45 §9 |
+| Onboarding | `onboarding.started` `.step_completed` `.completed` | 42 §9 |
 
 Note: spec 21 §10 automation hooks are blocked on the Support group — the
 automation engine listens on the event bus, so no events means no triggers.
@@ -70,6 +71,7 @@ calendar/report/dashboard constants.)
 Reachable by URL only until added:
 
 - `/app/sequences` → suggest the **Engage** group
+- `/app/settings/onboarding` — **already added** by the onboarding agent (one line)
 - `/app/marketing`, `/app/customer-success`, `/app/booking-links` *(pending agents)*
 - `/app/book/[slug]` is a **public** page and should NOT appear in nav
 
