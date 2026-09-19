@@ -23,6 +23,13 @@ export function createApp() {
     "*",
     cors({
       origin: origins,
+      // Auth uses an httpOnly session cookie, so the browser sends the login
+      // request with credentials: "include". Without this the preflight is
+      // rejected and every authenticated call fails cross-origin, even though
+      // the allowlist above matches. Unit tests never catch it — they are not
+      // cross-origin.
+      credentials: true,
+      allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
       allowHeaders: ["content-type", "authorization", "x-request-id"],
       exposeHeaders: ["x-request-id"],
     }),

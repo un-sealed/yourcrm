@@ -8,6 +8,11 @@ import {
   openApiPaths as activitiesOpenApiPaths,
 } from "./activities"
 import {
+  basePath as authBasePath,
+  createRoutes as createAuthRoutes,
+  openApiPaths as authOpenApiPaths,
+} from "./auth"
+import {
   basePath as automationBasePath,
   createRoutes as createAutomationRoutes,
   openApiPaths as automationOpenApiPaths,
@@ -131,6 +136,7 @@ import {
  */
 export const moduleRoutes: ModuleDefinition[] = [
   { path: activitiesBasePath, createRoutes: createActivitiesRoutes, openApiPaths: activitiesOpenApiPaths },
+  { path: authBasePath, createRoutes: createAuthRoutes, openApiPaths: authOpenApiPaths },
   { path: automationBasePath, createRoutes: createAutomationRoutes, openApiPaths: automationOpenApiPaths },
   { path: calendarBasePath, createRoutes: createCalendarRoutes, openApiPaths: calendarOpenApiPaths },
   { path: callingBasePath, createRoutes: createCallingRoutes, openApiPaths: callingOpenApiPaths },

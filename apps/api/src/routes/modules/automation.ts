@@ -533,10 +533,19 @@ export function createRoutes(deps: AutomationRouteDeps = {}) {
  * `apps/api/src/index.ts`; route factories must not subscribe (see the
  * file header).
  */
-export function subscribeAutomationDispatcher(
-  service: WorkflowAutomationService = defaultService(),
-): () => void {
-  return subscribeWorkflowDispatcher(getEventBus(), service, (err) => {
+export function subscribeAutomationDispatcher(service?: WorkflowAutomationService): () => void {
+  // Resolve the service lazily, on first dispatched event — NOT at boot.
+  // A default parameter of `defaultService()` evaluates immediately, which
+  // calls getDb() during module bootstrap and crashes the API before it can
+  // serve anything. Every other module defers construction the same way.
+  let resolved: WorkflowAutomationService | undefined = service
+  const lazy = new Proxy({} as WorkflowAutomationService, {
+    get(_t, prop: string | symbol) {
+      resolved ??= defaultService()
+      return Reflect.get(resolved as object, prop, resolved)
+    },
+  })
+  return subscribeWorkflowDispatcher(getEventBus(), lazy, (err) => {
     console.error(
       JSON.stringify({ level: "error", msg: "automation_dispatch_failed", err: String(err) }),
     )
