@@ -20,6 +20,8 @@ export const CRM_BOUNDARY_VERSION = 0 as const
 /** Re-exported from @yourcrm/validation so both crm and testing can use it. */
 export type { ServiceContext } from "@yourcrm/validation"
 export * from "./activities"
+export * from "./ai-assistant"
+export * from "./ai-governance"
 export * from "./automation"
 export * from "./calendar"
 export * from "./calling"

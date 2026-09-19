@@ -17,6 +17,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@hono/zod-validator": "^0.7.2",
+        "@yourcrm/ai": "workspace:*",
         "@yourcrm/auth": "workspace:*",
         "@yourcrm/config": "workspace:*",
         "@yourcrm/crm": "workspace:*",
@@ -163,6 +164,7 @@
       "name": "@yourcrm/crm",
       "version": "0.1.0",
       "dependencies": {
+        "@yourcrm/ai": "workspace:*",
         "@yourcrm/events": "workspace:*",
         "@yourcrm/integrations": "workspace:*",
         "@yourcrm/permissions": "workspace:*",

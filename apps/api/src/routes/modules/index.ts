@@ -8,6 +8,16 @@ import {
   openApiPaths as activitiesOpenApiPaths,
 } from "./activities"
 import {
+  basePath as aiGovernanceBasePath,
+  createRoutes as createAiGovernanceRoutes,
+  openApiPaths as aiGovernanceOpenApiPaths,
+} from "./ai-governance"
+import {
+  basePath as aiBasePath,
+  createRoutes as createAiRoutes,
+  openApiPaths as aiOpenApiPaths,
+} from "./ai"
+import {
   basePath as authBasePath,
   createRoutes as createAuthRoutes,
   openApiPaths as authOpenApiPaths,
@@ -141,6 +151,8 @@ import {
  */
 export const moduleRoutes: ModuleDefinition[] = [
   { path: activitiesBasePath, createRoutes: createActivitiesRoutes, openApiPaths: activitiesOpenApiPaths },
+  { path: aiGovernanceBasePath, createRoutes: createAiGovernanceRoutes, openApiPaths: aiGovernanceOpenApiPaths },
+  { path: aiBasePath, createRoutes: createAiRoutes, openApiPaths: aiOpenApiPaths },
   { path: authBasePath, createRoutes: createAuthRoutes, openApiPaths: authOpenApiPaths },
   { path: automationBasePath, createRoutes: createAutomationRoutes, openApiPaths: automationOpenApiPaths },
   { path: calendarBasePath, createRoutes: createCalendarRoutes, openApiPaths: calendarOpenApiPaths },

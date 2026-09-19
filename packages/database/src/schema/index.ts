@@ -1,4 +1,6 @@
 export * from "./activities"
+export * from "./ai"
+export * from "./ai-governance"
 export * from "./auth"
 export * from "./automation"
 export * from "./base"

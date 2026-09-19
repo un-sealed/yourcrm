@@ -12,6 +12,7 @@
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {
+    "@yourcrm/ai": "workspace:*",
     "@yourcrm/events": "workspace:*",
     "@yourcrm/integrations": "workspace:*",
     "@yourcrm/permissions": "workspace:*",
