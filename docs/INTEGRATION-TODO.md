@@ -160,6 +160,27 @@ checking at exactly the seam where service and repository types could drift.
 
 ---
 
+## 6.0 KNOWN MERGE CONFLICT — `packages/events`
+
+`agent/marketplace-sdk` edited `packages/events/src/{envelope,index}.ts`
+despite its prompt saying a missing constant is a blocker to report. Its
+version is the better one and its code depends on it, but `main` already has
+a different `MarketplaceEvents` group added centrally.
+
+Resolve to the **union**:
+```ts
+export const MarketplaceEvents = {
+  AppRegistered: "app.registered",
+  AppInstalled: "app.installed",
+  AppUninstalled: "app.uninstalled",
+  ScopesGranted: "app.scopes_granted",
+  AppScopeDenied: "app.scope_denied",
+  AppError: "app.error",
+} as const
+```
+Take theirs and add `ScopesGranted`. Nothing references `ScopesGranted` yet,
+so dropping it would also be safe — but it matches spec 49's intent.
+
 ## 6a. Shared-file edits from mobile-pwa — review at merge
 
 All documented by the agent, all additive:
