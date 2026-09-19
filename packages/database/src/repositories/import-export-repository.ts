@@ -25,8 +25,11 @@ export type CreateImportJobInput = {
 }
 
 export type UpdateImportJobInput = Partial<
-  Pick<NewImportJob, "fileName" | "ownerId" | "mapping" | "errors" | "errorReport">
+  Pick<NewImportJob, "fileName" | "ownerId" | "errorReport">
 > & {
+  /** jsonb: Drizzle infers `unknown` for these, so declare the real shape. */
+  mapping?: Record<string, string> | null
+  errors?: unknown
   status?: string | null
   mode?: string | null
   totalRows?: number | null
@@ -48,8 +51,10 @@ export type CreateExportJobInput = {
 }
 
 export type UpdateExportJobInput = Partial<
-  Pick<NewExportJob, "fileName" | "ownerId" | "filters" | "filePath">
+  Pick<NewExportJob, "fileName" | "ownerId" | "filePath">
 > & {
+  /** jsonb: Drizzle infers `unknown`, so declare the real shape. */
+  filters?: Record<string, unknown> | null
   status?: string | null
   totalRows?: number | null
 }

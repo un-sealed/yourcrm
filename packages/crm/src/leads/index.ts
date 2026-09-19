@@ -17,8 +17,6 @@ export type {
   UpdateLeadInput,
 } from "./types"
 export type {
-  AuditWriter,
-  EventEmitter,
   LeadAuditInput,
   LeadListQuery,
   LeadListResult,
@@ -27,3 +25,5 @@ export type {
   LeadsServiceDeps,
   LeadsStore,
 } from "./types"
+// Shared across every CRM module — see ../ports.ts for why they live there.
+export type { AuditWriter, EventEmitter } from "../ports"

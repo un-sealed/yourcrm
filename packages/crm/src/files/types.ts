@@ -1,4 +1,5 @@
 import type { ServiceContext } from "../index"
+import type { AuditWriter, EventEmitter } from "../ports"
 
 /**
  * Files service ports (mirrors the people module pattern).
@@ -61,21 +62,6 @@ export type FileAuditInput = {
   source?: "user" | "automation" | "ai" | "integration" | "mcp"
 }
 
-export type AuditWriter = (input: FileAuditInput) => Promise<unknown>
-
-export type EventEmitter = {
-  emit(event: {
-    event: string
-    workspaceId: string
-    actorId?: string
-    entityType?: string
-    entityId?: string
-    before?: unknown
-    after?: unknown
-    correlationId?: string
-  }): Promise<void>
-}
-
 /**
  * Presigned-URL port. The API layer binds this to `@yourcrm/storage` (PUT
  * for uploads, GET for downloads); tests inject a fake. The service never
@@ -105,7 +91,7 @@ export type FilesServiceContext = ServiceContext
 
 export type FilesServiceDeps = {
   store: FilesStore
-  audit: AuditWriter
+  audit: AuditWriter<FileAuditInput>
   events?: EventEmitter
   urls?: UrlSigner
 }

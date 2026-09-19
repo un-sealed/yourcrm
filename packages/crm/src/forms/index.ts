@@ -27,8 +27,6 @@ export type {
   UpdateFormInput,
 } from "./service"
 export type {
-  AuditWriter,
-  EventEmitter,
   FormFieldRecord,
   FormListQuery,
   FormListResult,
@@ -41,3 +39,5 @@ export type {
   SubmissionListQuery,
   SubmissionListResult,
 } from "./types"
+// Shared across every CRM module — see ../ports.ts for why they live there.
+export type { AuditWriter, EventEmitter } from "../ports"

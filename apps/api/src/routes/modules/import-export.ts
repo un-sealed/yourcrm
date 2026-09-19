@@ -23,7 +23,7 @@ import { getEventBus } from "@yourcrm/events"
 import { PermissionDeniedError } from "@yourcrm/permissions"
 import { errorEnvelope, paginatedEnvelopeSchema } from "@yourcrm/validation"
 import { Hono } from "hono"
-import type { Context } from "hono"
+import type { Context, Env } from "hono"
 import { z } from "zod"
 import type { AppEnv } from "../../hono-env"
 import { requireSession } from "../../middleware/auth"
@@ -163,7 +163,7 @@ function mapError(c: Context<AppEnv>, err: unknown) {
   throw err
 }
 
-function invalidBody(c: Context<AppEnv>, result: { error: { flatten: () => unknown } }) {
+function invalidBody(c: Context<Env>, result: { error: { flatten: () => unknown } }) {
   return c.json(
     errorEnvelope(
       "VALIDATION_ERROR",
@@ -175,7 +175,7 @@ function invalidBody(c: Context<AppEnv>, result: { error: { flatten: () => unkno
   )
 }
 
-function invalidQuery(c: Context<AppEnv>, result: { error: { flatten: () => unknown } }) {
+function invalidQuery(c: Context<Env>, result: { error: { flatten: () => unknown } }) {
   return c.json(
     errorEnvelope(
       "VALIDATION_ERROR",

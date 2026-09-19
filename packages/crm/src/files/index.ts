@@ -18,9 +18,7 @@ export type {
   UploadUrlRequest,
 } from "./service"
 export type {
-  AuditWriter,
   DownloadUrlResult,
-  EventEmitter,
   FileAuditInput,
   FileListQuery,
   FileListResult,
@@ -31,3 +29,5 @@ export type {
   UploadUrlResult,
   UrlSigner,
 } from "./types"
+// Shared across every CRM module — see ../ports.ts for why they live there.
+export type { AuditWriter, EventEmitter } from "../ports"

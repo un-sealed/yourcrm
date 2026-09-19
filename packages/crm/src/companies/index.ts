@@ -9,7 +9,6 @@ export {
 } from "./schemas"
 export type { CompanyDto, CompanyQuery, CreateCompanyInput, UpdateCompanyInput } from "./schemas"
 export type {
-  AuditWriter,
   CompaniesServiceContext,
   CompaniesServiceDeps,
   CompaniesStore,
@@ -18,5 +17,6 @@ export type {
   CompanyListResult,
   CompanyRecord,
   CompanyWithAddresses,
-  EventEmitter,
 } from "./types"
+// Shared across every CRM module — see ../ports.ts for why they live there.
+export type { AuditWriter, EventEmitter } from "../ports"

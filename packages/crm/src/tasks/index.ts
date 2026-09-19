@@ -3,8 +3,6 @@ export type { TasksService } from "./service"
 export { createTaskSchema, taskQuerySchema, taskSchema, updateTaskSchema } from "./service"
 export type { CreateTaskInput, TaskDto, TaskQuery, UpdateTaskInput } from "./service"
 export type {
-  AuditWriter,
-  EventEmitter,
   TaskAuditInput,
   TaskListQuery,
   TaskListResult,
@@ -13,3 +11,5 @@ export type {
   TasksServiceDeps,
   TasksStore,
 } from "./types"
+// Shared across every CRM module — see ../ports.ts for why they live there.
+export type { AuditWriter, EventEmitter } from "../ports"

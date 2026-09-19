@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { paginationQuerySchema } from "@yourcrm/validation"
 import type { ServiceContext } from "../index"
+import type { AuditWriter, EventEmitter } from "../ports"
 
 /**
  * Leads service ports + zod schemas (the pattern every module agent mirrors,
@@ -63,26 +64,11 @@ export type LeadAuditInput = {
   source?: "user" | "automation" | "ai" | "integration" | "mcp"
 }
 
-export type AuditWriter = (input: LeadAuditInput) => Promise<unknown>
-
-export type EventEmitter = {
-  emit(event: {
-    event: string
-    workspaceId: string
-    actorId?: string
-    entityType?: string
-    entityId?: string
-    before?: unknown
-    after?: unknown
-    correlationId?: string
-  }): Promise<void>
-}
-
 export type LeadsServiceContext = ServiceContext
 
 export type LeadsServiceDeps = {
   store: LeadsStore
-  audit: AuditWriter
+  audit: AuditWriter<LeadAuditInput>
   events?: EventEmitter
 }
 

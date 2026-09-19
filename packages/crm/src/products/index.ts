@@ -16,8 +16,6 @@ export type {
   UpdateProductInput,
 } from "./schemas"
 export type {
-  AuditWriter,
-  EventEmitter,
   ProductListQuery,
   ProductListResult,
   ProductPriceRecord,
@@ -27,3 +25,5 @@ export type {
   ProductsStore,
   ProductWithPrices,
 } from "./types"
+// Shared across every CRM module — see ../ports.ts for why they live there.
+export type { AuditWriter, EventEmitter } from "../ports"

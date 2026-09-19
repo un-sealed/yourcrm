@@ -1,4 +1,5 @@
 import type { ServiceContext } from "../index"
+import type { AuditWriter, EventEmitter } from "../ports"
 
 /**
  * People service ports (the pattern every module agent mirrors).
@@ -72,25 +73,10 @@ export type PersonAuditInput = {
   source?: "user" | "automation" | "ai" | "integration" | "mcp"
 }
 
-export type AuditWriter = (input: PersonAuditInput) => Promise<unknown>
-
-export type EventEmitter = {
-  emit(event: {
-    event: string
-    workspaceId: string
-    actorId?: string
-    entityType?: string
-    entityId?: string
-    before?: unknown
-    after?: unknown
-    correlationId?: string
-  }): Promise<void>
-}
-
 export type PeopleServiceContext = ServiceContext
 
 export type PeopleServiceDeps = {
   store: PeopleStore
-  audit: AuditWriter
+  audit: AuditWriter<PersonAuditInput>
   events?: EventEmitter
 }

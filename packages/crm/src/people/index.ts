@@ -10,8 +10,6 @@ export {
 } from "./schemas"
 export type { CreatePersonInput, PersonDto, PersonQuery, UpdatePersonInput } from "./schemas"
 export type {
-  AuditWriter,
-  EventEmitter,
   PeopleServiceContext,
   PeopleServiceDeps,
   PeopleStore,
@@ -21,3 +19,5 @@ export type {
   PersonRecord,
   PersonWithContacts,
 } from "./types"
+// Shared across every CRM module — see ../ports.ts for why they live there.
+export type { AuditWriter, EventEmitter } from "../ports"

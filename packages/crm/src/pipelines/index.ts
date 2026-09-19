@@ -24,8 +24,6 @@ export type {
   UpdateStageInput,
 } from "./service"
 export type {
-  AuditWriter,
-  EventEmitter,
   PipelineAuditInput,
   PipelineListQuery,
   PipelineListResult,
@@ -36,3 +34,5 @@ export type {
   PipelinesStore,
   PipelineWithStages,
 } from "./types"
+// Shared across every CRM module — see ../ports.ts for why they live there.
+export type { AuditWriter, EventEmitter } from "../ports"

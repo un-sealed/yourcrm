@@ -1,4 +1,5 @@
 import type { ServiceContext } from "../index"
+import type { AuditWriter, EventEmitter } from "../ports"
 
 /**
  * Pipelines service ports (mirrors `people/types.ts`).
@@ -96,25 +97,10 @@ export type PipelineAuditInput = {
   source?: "user" | "automation" | "ai" | "integration" | "mcp"
 }
 
-export type AuditWriter = (input: PipelineAuditInput) => Promise<unknown>
-
-export type EventEmitter = {
-  emit(event: {
-    event: string
-    workspaceId: string
-    actorId?: string
-    entityType?: string
-    entityId?: string
-    before?: unknown
-    after?: unknown
-    correlationId?: string
-  }): Promise<void>
-}
-
 export type PipelinesServiceContext = ServiceContext
 
 export type PipelinesServiceDeps = {
   store: PipelinesStore
-  audit: AuditWriter
+  audit: AuditWriter<PipelineAuditInput>
   events?: EventEmitter
 }

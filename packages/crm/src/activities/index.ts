@@ -25,6 +25,6 @@ export type {
   ActivityListResult,
   ActivityRecord,
   ActivityTimelineQuery as ActivityTimelineStoreQuery,
-  AuditWriter,
-  EventEmitter,
 } from "./types"
+// Shared across every CRM module — see ../ports.ts for why they live there.
+export type { AuditWriter, EventEmitter } from "../ports"

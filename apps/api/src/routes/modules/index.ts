@@ -3,15 +3,70 @@
 
 import type { ModuleDefinition } from "./types"
 import {
+  basePath as activitiesBasePath,
+  createRoutes as createActivitiesRoutes,
+  openApiPaths as activitiesOpenApiPaths,
+} from "./activities"
+import {
+  basePath as companiesBasePath,
+  createRoutes as createCompaniesRoutes,
+  openApiPaths as companiesOpenApiPaths,
+} from "./companies"
+import {
+  basePath as dealsBasePath,
+  createRoutes as createDealsRoutes,
+  openApiPaths as dealsOpenApiPaths,
+} from "./deals"
+import {
+  basePath as filesBasePath,
+  createRoutes as createFilesRoutes,
+  openApiPaths as filesOpenApiPaths,
+} from "./files"
+import {
+  basePath as formsBasePath,
+  createRoutes as createFormsRoutes,
+  openApiPaths as formsOpenApiPaths,
+} from "./forms"
+import {
+  basePath as importExportBasePath,
+  createRoutes as createImportExportRoutes,
+  openApiPaths as importExportOpenApiPaths,
+} from "./import-export"
+import {
+  basePath as invoicesBasePath,
+  createRoutes as createInvoicesRoutes,
+  openApiPaths as invoicesOpenApiPaths,
+} from "./invoices"
+import {
+  basePath as leadsBasePath,
+  createRoutes as createLeadsRoutes,
+  openApiPaths as leadsOpenApiPaths,
+} from "./leads"
+import {
   basePath as peopleBasePath,
   createRoutes as createPeopleRoutes,
   openApiPaths as peopleOpenApiPaths,
 } from "./people"
 import {
+  basePath as pipelinesBasePath,
+  createRoutes as createPipelinesRoutes,
+  openApiPaths as pipelinesOpenApiPaths,
+} from "./pipelines"
+import {
+  basePath as productsBasePath,
+  createRoutes as createProductsRoutes,
+  openApiPaths as productsOpenApiPaths,
+} from "./products"
+import {
   basePath as systemBasePath,
   createRoutes as createSystemRoutes,
   openApiPaths as systemOpenApiPaths,
 } from "./system"
+import {
+  basePath as tasksBasePath,
+  createRoutes as createTasksRoutes,
+  openApiPaths as tasksOpenApiPaths,
+} from "./tasks"
 
 /**
  * Module registry — the single list `routes/v1.ts` mounts. Module agents
@@ -20,6 +75,17 @@ import {
  * instead of editing this file or `v1.ts` by hand.
  */
 export const moduleRoutes: ModuleDefinition[] = [
+  { path: activitiesBasePath, createRoutes: createActivitiesRoutes, openApiPaths: activitiesOpenApiPaths },
+  { path: companiesBasePath, createRoutes: createCompaniesRoutes, openApiPaths: companiesOpenApiPaths },
+  { path: dealsBasePath, createRoutes: createDealsRoutes, openApiPaths: dealsOpenApiPaths },
+  { path: filesBasePath, createRoutes: createFilesRoutes, openApiPaths: filesOpenApiPaths },
+  { path: formsBasePath, createRoutes: createFormsRoutes, openApiPaths: formsOpenApiPaths },
+  { path: importExportBasePath, createRoutes: createImportExportRoutes, openApiPaths: importExportOpenApiPaths },
+  { path: invoicesBasePath, createRoutes: createInvoicesRoutes, openApiPaths: invoicesOpenApiPaths },
+  { path: leadsBasePath, createRoutes: createLeadsRoutes, openApiPaths: leadsOpenApiPaths },
   { path: peopleBasePath, createRoutes: createPeopleRoutes, openApiPaths: peopleOpenApiPaths },
+  { path: pipelinesBasePath, createRoutes: createPipelinesRoutes, openApiPaths: pipelinesOpenApiPaths },
+  { path: productsBasePath, createRoutes: createProductsRoutes, openApiPaths: productsOpenApiPaths },
   { path: systemBasePath, createRoutes: createSystemRoutes, openApiPaths: systemOpenApiPaths },
+  { path: tasksBasePath, createRoutes: createTasksRoutes, openApiPaths: tasksOpenApiPaths },
 ]

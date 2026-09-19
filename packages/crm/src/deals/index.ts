@@ -19,7 +19,6 @@ export type {
   UpdateDealInput,
 } from "./service"
 export type {
-  AuditWriter,
   DealAuditInput,
   DealListQuery,
   DealListResult,
@@ -27,5 +26,6 @@ export type {
   DealsServiceContext,
   DealsServiceDeps,
   DealsStore,
-  EventEmitter,
 } from "./types"
+// Shared across every CRM module — see ../ports.ts for why they live there.
+export type { AuditWriter, EventEmitter } from "../ports"

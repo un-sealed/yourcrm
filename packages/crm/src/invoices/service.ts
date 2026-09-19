@@ -47,6 +47,14 @@ function toCents(value: unknown): number {
 }
 
 /**
+ * Only `status` and `dueDate` are read off an invoice here. `InvoiceRecord` is a
+ * pass-through `Record<string, unknown>`, so neither key is statically declared —
+ * keeping the index signature in the parameter type is what makes a whole
+ * `InvoiceRecord` assignable while still naming the two fields these helpers use.
+ */
+export type InvoiceOverdueInput = Record<string, unknown> & { status?: unknown; dueDate?: unknown }
+
+/**
  * Balance due is derived from line items and recorded payments — it is never
  * stored as a mutable field. `total = Σ quantity × unitAmountCents`,
  * `paid = Σ payment amountCents`, `balanceDue = total − paid`.
@@ -54,7 +62,7 @@ function toCents(value: unknown): number {
 export function computeTotals(
   lineItems: Pick<InvoiceLineItemRecord, "quantity" | "unitAmountCents">[],
   payments: Pick<PaymentRecord, "amountCents">[],
-  invoice: Pick<InvoiceRecord, "status"> & { dueDate?: unknown },
+  invoice: InvoiceOverdueInput,
   now: Date = new Date(),
 ): InvoiceTotals {
   const totalCents = lineItems.reduce(
@@ -63,12 +71,17 @@ export function computeTotals(
   )
   const paidCents = payments.reduce((sum, payment) => sum + toCents(payment.amountCents), 0)
   const balanceDueCents = totalCents - paidCents
-  return { totalCents, paidCents, balanceDueCents, overdue: isOverdue(invoice, balanceDueCents, now) }
+  return {
+    totalCents,
+    paidCents,
+    balanceDueCents,
+    overdue: isOverdue(invoice, balanceDueCents, now),
+  }
 }
 
 /** Overdue when unpaid, past its due date, and not closed (paid/void). */
 export function isOverdue(
-  invoice: Pick<InvoiceRecord, "status"> & { dueDate?: unknown },
+  invoice: InvoiceOverdueInput,
   balanceDueCents: number,
   now: Date = new Date(),
 ): boolean {
@@ -115,7 +128,10 @@ export function createInvoicesService(deps: InvoicesServiceDeps) {
     return withTotals(found)
   }
 
-  async function create(ctx: InvoicesServiceContext, rawInput: unknown): Promise<InvoiceWithDetails> {
+  async function create(
+    ctx: InvoicesServiceContext,
+    rawInput: unknown,
+  ): Promise<InvoiceWithDetails> {
     requirePermission(permissionOf(ctx, "create"))
     const input = createInvoiceSchema.parse(rawInput)
     const invoice = await deps.store.create(
@@ -254,12 +270,7 @@ export function createInvoicesService(deps: InvoicesServiceDeps) {
     if (before.status !== "draft") {
       throw new Error(`invoice.send: only draft invoices can be sent (status is ${before.status})`)
     }
-    const after = await deps.store.update(
-      ctx.workspaceId,
-      id,
-      { status: "sent" },
-      ctx.actorId,
-    )
+    const after = await deps.store.update(ctx.workspaceId, id, { status: "sent" }, ctx.actorId)
     if (!after) throw new InvoiceNotFoundError(id)
     await events.emit(
       createEvent({
@@ -327,12 +338,7 @@ export function createInvoicesService(deps: InvoicesServiceDeps) {
     const full = withTotals(refreshed)
     if (full.totals.balanceDueCents <= 0 && full.invoice.status !== "paid") {
       const before = full.invoice
-      const after = await deps.store.update(
-        ctx.workspaceId,
-        id,
-        { status: "paid" },
-        ctx.actorId,
-      )
+      const after = await deps.store.update(ctx.workspaceId, id, { status: "paid" }, ctx.actorId)
       if (!after) throw new InvoiceNotFoundError(id)
       await events.emit(
         createEvent({
