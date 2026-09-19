@@ -45,3 +45,28 @@ are added by module agents following the `0001_foundation.sql` pattern.
 
 Modules do not write this table directly: they call the indexing service in
 `@yourcrm/crm/src/search`, which applies permissions and audit.
+
+## Workflow automation tables (engine contract)
+
+- `src/schema/automation.ts` — `workflows` (definition: trigger event,
+  FilterTree conditions, ordered actions, enabled/disabled),
+  `workflow_runs` (one per triggering event) and `workflow_run_steps`
+  (one per action attempt). Foreign keys stay inside this migration;
+  `owner_id` / `actor_id` are plain uuid columns.
+- Two UNIQUE indexes carry the engine's guarantees, not hygiene:
+  - `workflow_runs_event_idx (workflow_id, trigger_event_id)` —
+    IDEMPOTENCY. A redelivered event cannot create a second run.
+  - `workflow_run_steps_index_idx (run_id, step_index)` — the per-step
+    claim. A retried job resumes instead of re-applying an action.
+    `createRun` and `claimRunStep` insert `ON CONFLICT DO NOTHING` and
+    report `created` / `claimed`, so idempotency is a Postgres result the
+    domain service reads rather than a decision it makes.
+- `workflow_runs.depth` is the cascade counter behind loop protection.
+- `src/repositories/automation-repository.ts` — CRUD, the two idempotent
+  writes, run history, plus the action sinks (`updateTargetField`,
+  `attachTagByName`, `createNotification`). `WORKFLOW_TARGET_OBJECTS` is
+  an allowlist of objects and writable fields in the same spirit as
+  `REPORT_OBJECTS`: naming a field is the only way to make an automation
+  able to write it, and each write goes through the owning module's own
+  repository so no business rule is duplicated.
+- `migrations/0190_automation.sql` — the DDL mirror of the schema file.
