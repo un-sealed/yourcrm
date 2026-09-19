@@ -1,4 +1,6 @@
 export { closeDb, getDb } from "./client"
 export type { Database } from "./client"
+export { auditSourceSchema, writeAudit } from "./audit"
+export type { AuditDb, AuditSource, WriteAuditInput } from "./audit"
 export * from "./schema"
 export * from "./repositories"
