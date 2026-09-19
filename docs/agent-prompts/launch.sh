@@ -43,10 +43,13 @@ JOBS=0                 # 0 = no cap, launch every agent at once
 MODELS_OVERRIDE=""
 ONLY=""
 WAVE="${WAVE:-2}"
-LINK_DEPS=0    # --link: symlink node_modules instead of installing per worktree
+# --link is UNSAFE in this monorepo and left disabled: Bun workspaces need a
+# per-package node_modules, so symlinking only the root leaves zod/bun:test
+# unresolvable and @yourcrm/* pointing at the root checkout, not the worktree.
+LINK_DEPS=0
 
 cmd="${1:-help}"; shift || true
-for a in "$@"; do [[ "$a" == "--link" ]] && LINK_DEPS=1; done
+for a in "$@"; do [[ "$a" == "--link" ]] && { err "--link is unsafe in this monorepo (see launch.sh comment); ignoring"; }; done
 while getopts ":j:m:o:w:" opt; do
   case "$opt" in
     j) JOBS="$OPTARG" ;;
@@ -174,7 +177,7 @@ up() {
     if [[ -f "$REPO/.env" ]]; then
       sed -E "s#^(DATABASE_URL=.*)/[a-zA-Z0-9_]+(\"?)\$#\\1/$dbname\\2#" "$REPO/.env" >"$wt/.env"
       docker compose -f "$REPO/docker-compose.yml" exec -T postgres \
-        psql -U yourcrm -d postgres -c "CREATE DATABASE $dbname" >/dev/null 2>&1 \
+        psql -U yourcrm -d postgres -c "CREATE DATABASE $dbname" </dev/null >/dev/null 2>&1 \
         && log "created database $dbname" || true
     fi
     if [[ ! -e "$wt/node_modules" ]]; then
