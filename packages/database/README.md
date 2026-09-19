@@ -29,3 +29,19 @@ are added by module agents following the `0001_foundation.sql` pattern.
   are not barrelled):
   `import { createPeopleRepository } from "@yourcrm/database/src/repositories/people-repository"`
 - `migrations/0010_people.sql` — the DDL mirror of the schema file.
+
+## Search index (cross-module contract)
+
+- `src/schema/search.ts` — `search_index`, one denormalized row per indexed
+  record. `record_id` is a plain uuid with an index and no FK (it points into
+  whichever module table `object_type` names). `search_vector` is a GENERATED
+  STORED `tsvector` (`simple` config, weighted title/subtitle/body) behind a
+  GIN index. `owner_id` + `visibility` carry the record-level permission facts
+  the query filters on.
+- `src/repositories/search-repository.ts` — `createSearchRepository()` with
+  `upsert` (idempotent on workspace + object type + record id),
+  `removeByRecord`, `findByRecord` and a ranked `query`. Import via subpath.
+- `migrations/0110_search.sql` — the DDL mirror of the schema file.
+
+Modules do not write this table directly: they call the indexing service in
+`@yourcrm/crm/src/search`, which applies permissions and audit.
