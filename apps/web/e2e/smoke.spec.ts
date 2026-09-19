@@ -17,10 +17,18 @@ test("implemented module routes render their own page", async ({ page }) => {
   // People is implemented, so it must NOT show the placeholder any more.
   await page.goto("/app/people")
   await expect(page.getByText("Coming soon")).toHaveCount(0)
+
+  // WhatsApp (spec 16-whatsapp) is implemented too — same assertion.
+  await page.goto("/app/whatsapp")
+  await expect(page.getByText("Coming soon")).toHaveCount(0)
+  await expect(page.getByRole("heading", { name: "WhatsApp" })).toBeVisible()
 })
 
 test("unimplemented module routes still render the placeholder", async ({ page }) => {
-  // whatsapp has no module yet and still falls through to app/[section].
-  await page.goto("/app/whatsapp")
+  // Tickets (spec 21-support) has no module yet and still falls through to
+  // app/[section] — unlike a made-up segment, it stays in the shell's
+  // TITLES map, so this exercises the real "not built yet" placeholder
+  // rather than Next's notFound().
+  await page.goto("/app/tickets")
   await expect(page.getByText("Coming soon")).toBeVisible()
 })
