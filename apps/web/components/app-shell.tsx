@@ -7,6 +7,8 @@ import { Button } from "@yourcrm/ui"
 import { cn } from "@yourcrm/ui"
 import { ALL_ROUTES, NAV_SECTIONS } from "./nav-sections"
 import { SessionFooter } from "./session-footer"
+import { OfflineBanner } from "./offline-banner"
+import { MobileNav } from "./mobile-nav"
 import { useUiStore, useWorkspaceStore } from "@/lib/store"
 
 /** Left navigation shell: workspace switcher, nav, user menu, palette entry. */
@@ -19,7 +21,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       {sidebarOpen && (
-        <aside className="flex w-60 shrink-0 flex-col border-r bg-card">
+        <aside className="hidden w-60 shrink-0 flex-col border-r bg-card md:flex">
           <div className="flex items-center justify-between border-b px-4 py-3">
             <button className="truncate text-left text-sm font-semibold" title="Workspace switcher">
               {workspaceName}
@@ -55,9 +57,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </aside>
       )}
       <div className="flex min-w-0 flex-1 flex-col">
+        <OfflineBanner />
         <header className="flex items-center gap-2 border-b px-4 py-2.5">
           {!sidebarOpen && (
-            <Button variant="ghost" size="sm" onClick={toggleSidebar} aria-label="Expand sidebar">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleSidebar}
+              aria-label="Expand sidebar"
+              className="hidden md:inline-flex"
+            >
               »
             </Button>
           )}
@@ -71,9 +80,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Button size="sm">+ Create</Button>
           </div>
         </header>
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-4 pb-20 md:p-6 md:pb-6">{children}</main>
       </div>
       {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}
+      <MobileNav />
     </div>
   )
 }

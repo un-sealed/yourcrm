@@ -273,8 +273,16 @@ export function DataTable<T>({
         </div>
       </details>
 
+      {/*
+        Mobile/responsive behavior lives entirely in these two lines, not a
+        fork: `min-w-max` keeps columns at their natural (unsquished)
+        width, so a phone viewport scrolls the table horizontally via the
+        wrapper's `overflow-x-auto` instead of wrapping every cell's text
+        into an unreadable stack. Every existing `<DataTable>` usage is
+        unaffected — no props changed, this is pure CSS.
+      */}
       <div className="overflow-x-auto rounded-md border border-border">
-        <table ref={tableRef} aria-label={ariaLabel} className="w-full text-sm">
+        <table ref={tableRef} aria-label={ariaLabel} className="w-full min-w-max text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">
               {selectable ? (
@@ -302,7 +310,7 @@ export function DataTable<T>({
                         : undefined
                     }
                     className={cn(
-                      "px-3 py-2 font-medium text-muted-foreground",
+                      "whitespace-nowrap px-3 py-2 font-medium text-muted-foreground",
                       ALIGN_CLASSES[column.align ?? "left"],
                     )}
                   >
@@ -395,7 +403,7 @@ export function DataTable<T>({
                               }
                             }}
                             className={cn(
-                              "px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                              "whitespace-nowrap px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                               ALIGN_CLASSES[column.align ?? "left"],
                             )}
                           >
