@@ -16,6 +16,7 @@
     "@hono/zod-validator": "^0.7.2",
     "@yourcrm/auth": "workspace:*",
     "@yourcrm/config": "workspace:*",
+    "@yourcrm/crm": "workspace:*",
     "@yourcrm/database": "workspace:*",
     "@yourcrm/events": "workspace:*",
     "@yourcrm/permissions": "workspace:*",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@yourcrm/testing": "workspace:*",
     "eslint": "^9.34.0",
     "typescript": "^5.9.2"
   }

@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "@yourcrm/auth": "workspace:*",
-    "@yourcrm/crm": "workspace:*",
     "@yourcrm/events": "workspace:*",
     "@yourcrm/permissions": "workspace:*",
     "@yourcrm/validation": "workspace:*"

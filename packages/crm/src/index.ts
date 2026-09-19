@@ -17,9 +17,5 @@
 
 export const CRM_BOUNDARY_VERSION = 0 as const
 
-export type ServiceContext = {
-  workspaceId: string
-  actorId: string
-  role?: string
-  correlationId?: string
-}
+/** Re-exported from @yourcrm/validation so both crm and testing can use it. */
+export type { ServiceContext } from "@yourcrm/validation"

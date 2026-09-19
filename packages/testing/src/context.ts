@@ -1,5 +1,5 @@
 import { roleInWorkspace, type Session } from "@yourcrm/auth"
-import type { ServiceContext } from "@yourcrm/crm"
+import type { ServiceContext } from "@yourcrm/validation"
 import { nextId } from "./time"
 
 export type MakeServiceContextOptions = Partial<ServiceContext> & {
