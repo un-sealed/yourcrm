@@ -4,6 +4,7 @@ import {
   customFieldDefinitions,
   customFieldValues,
   isCustomFieldType,
+  type CustomFieldDefaultValue,
   type CustomFieldDefinition,
   type CustomFieldOptions,
   type CustomFieldType,
@@ -19,6 +20,8 @@ export type CreateCustomFieldDefinitionInput = {
   options?: CustomFieldOptions | undefined
   required?: boolean | undefined
   displayOrder?: number | undefined
+  /** Added additively by the custom-objects module (spec 33). */
+  defaultValue?: CustomFieldDefaultValue | undefined
 }
 
 export type UpdateCustomFieldDefinitionInput = {
@@ -26,6 +29,8 @@ export type UpdateCustomFieldDefinitionInput = {
   options?: CustomFieldOptions | undefined
   required?: boolean | undefined
   displayOrder?: number | undefined
+  /** Added additively by the custom-objects module (spec 33). */
+  defaultValue?: CustomFieldDefaultValue | undefined
 }
 
 const KEY_PATTERN = /^[a-z][a-z0-9_]*$/
@@ -126,6 +131,16 @@ export function createCustomFieldDefinitionsRepository() {
           "custom_field_definitions.create: select/multiselect requires a non-empty options array",
         )
       }
+      // A bad default must never become a back door for invalid data: it is
+      // checked against this field's own type before the row is written.
+      const defaultValue = input.defaultValue ?? null
+      const defaultError = validateCustomFieldValue(
+        { fieldType: input.fieldType, options: input.options ?? null },
+        defaultValue,
+      )
+      if (defaultError) {
+        throw new Error(`custom_field_definitions.create: default ${defaultError}`)
+      }
       const rows = await db
         .insert(customFieldDefinitions)
         .values({
@@ -135,6 +150,7 @@ export function createCustomFieldDefinitionsRepository() {
           label: input.label.trim(),
           fieldType: input.fieldType,
           options: input.options ?? null,
+          defaultValue,
           required: input.required ?? false,
           displayOrder: input.displayOrder ?? 0,
           ...(actorId === undefined ? {} : { createdBy: actorId, updatedBy: actorId }),
@@ -165,8 +181,9 @@ export function createCustomFieldDefinitionsRepository() {
     },
 
     /**
-     * Patch label/options/required/order only — key and fieldType are
-     * immutable once values may exist. Returns the updated row, or null.
+     * Patch label/options/required/order/default only — key and fieldType
+     * are immutable once values may exist (changing a type in place would
+     * silently reinterpret every stored value). Returns the row, or null.
      */
     async update(
       db: Database,
