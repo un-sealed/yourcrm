@@ -2,6 +2,7 @@ export {
   AiEvents,
   AutomationEvents,
   CommunicationEvents,
+  ConversationEvents,
   CrmEvents,
   CustomObjectEvents,
   createEvent,

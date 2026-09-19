@@ -32,6 +32,10 @@ export async function apiFetchRaw<T>(path: string, opts: ApiOptions = {}): Promi
   const { NEXT_PUBLIC_API_URL } = getClientEnv()
   const requestId = crypto.randomUUID()
   const res = await fetch(`${NEXT_PUBLIC_API_URL}${path}`, {
+    // Auth is an httpOnly session cookie on a different origin (:3000 -> :4000),
+    // so every request must opt in to sending it. Without this the cookie is
+    // set at login and then never sent again, and every page 401s.
+    credentials: "include",
     method: opts.method ?? "GET",
     headers: {
       "content-type": "application/json",

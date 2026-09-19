@@ -189,3 +189,11 @@ export const CustomObjectEvents = {
   RecordUpdated: "custom_record.updated",
   RecordDeleted: "custom_record.deleted",
 } as const
+
+export const ConversationEvents = {
+  Assigned: "conversation.assigned",
+  Unassigned: "conversation.unassigned",
+  Read: "conversation.read",
+  Archived: "conversation.archived",
+  Closed: "conversation.closed",
+} as const

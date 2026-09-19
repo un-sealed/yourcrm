@@ -123,6 +123,11 @@ import {
   openApiPaths as tasksOpenApiPaths,
 } from "./tasks"
 import {
+  basePath as unifiedInboxBasePath,
+  createRoutes as createUnifiedInboxRoutes,
+  openApiPaths as unifiedInboxOpenApiPaths,
+} from "./unified-inbox"
+import {
   basePath as whatsappBasePath,
   createRoutes as createWhatsappRoutes,
   openApiPaths as whatsappOpenApiPaths,
@@ -159,5 +164,6 @@ export const moduleRoutes: ModuleDefinition[] = [
   { path: searchBasePath, createRoutes: createSearchRoutes, openApiPaths: searchOpenApiPaths },
   { path: systemBasePath, createRoutes: createSystemRoutes, openApiPaths: systemOpenApiPaths },
   { path: tasksBasePath, createRoutes: createTasksRoutes, openApiPaths: tasksOpenApiPaths },
+  { path: unifiedInboxBasePath, createRoutes: createUnifiedInboxRoutes, openApiPaths: unifiedInboxOpenApiPaths },
   { path: whatsappBasePath, createRoutes: createWhatsappRoutes, openApiPaths: whatsappOpenApiPaths },
 ]
