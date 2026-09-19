@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# YourCRM — Docker build context exclusions.
+# Keeps `node_modules`, build output, local data and secrets out of the
+# image build context so `docker build` ships kilobytes, not hundreds of MB.
+# ---------------------------------------------------------------------------
+
+# Dependencies (reinstalled in the `deps` stage via `bun install`)
+node_modules
+
+# Build output (rebuilt inside the image; never copy host artifacts)
+.next
+out
+dist
+build
+coverage
+*.tsbuildinfo
+
+# Monorepo / tool caches
+.turbo
+
+# Version control
+.git
+
+# Test artifacts
+test-results
+playwright-report
+
+# Local stateful data (mounted as named volumes at runtime, never baked in)
+pgdata
+minio-data
+redisdata
+.drizzle
+
+# Secrets and local env (config comes from the runtime environment instead)
+.env
+.env.local
+.env.*.local
+
+# OS / editor noise
+.DS_Store
+*.log
+
+# Agent scratch state
+.agent-runs/
+
+# Local-only app (Expo client is not a server image target)
+apps/mobile
