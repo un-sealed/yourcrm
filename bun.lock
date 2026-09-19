@@ -258,6 +258,22 @@
         "typescript": "^5.9.2",
       },
     },
+    "packages/testing": {
+      "name": "@yourcrm/testing",
+      "version": "0.1.0",
+      "dependencies": {
+        "@yourcrm/auth": "workspace:*",
+        "@yourcrm/crm": "workspace:*",
+        "@yourcrm/events": "workspace:*",
+        "@yourcrm/permissions": "workspace:*",
+        "@yourcrm/validation": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "eslint": "^9.34.0",
+        "typescript": "^5.9.2",
+      },
+    },
     "packages/ui": {
       "name": "@yourcrm/ui",
       "version": "0.1.0",
@@ -614,6 +630,8 @@
     "@yourcrm/search": ["@yourcrm/search@workspace:packages/search"],
 
     "@yourcrm/storage": ["@yourcrm/storage@workspace:packages/storage"],
+
+    "@yourcrm/testing": ["@yourcrm/testing@workspace:packages/testing"],
 
     "@yourcrm/ui": ["@yourcrm/ui@workspace:packages/ui"],
 

@@ -12,6 +12,21 @@
  */
 
 const WORKTREE_RE = /yourcrm-([a-z0-9-]+)$/
+const RUNS = new URL("../../.agent-runs/", import.meta.url).pathname
+
+/**
+ * opencode can record outcome:"succeeded" for a session whose provider stream
+ * died mid-run ("The provider response ended unexpectedly"). Observed on
+ * docker-deploy. The transcript is the only reliable record, so cross-check it.
+ */
+async function transcriptError(slug: string): Promise<string | null> {
+  try {
+    const text = await Bun.file(`${RUNS}${slug}.log`).text()
+    return text.match(/^Error:.*/m)?.[0]?.slice(0, 60) ?? null
+  } catch {
+    return null
+  }
+}
 
 type Session = {
   id: string
@@ -75,12 +90,14 @@ const C = {
  * opencode marks a session idle when the turn ends. Running = no idle stamp
  * yet. `outcome` is only trustworthy once idle is set.
  */
-function classify(s: Session): { label: string; running: boolean } {
+function classify(s: Session, logErr: string | null): { label: string; running: boolean; note: string } {
   const idle = s.time?.idle
-  if (!idle) return { label: C.cyan("RUNNING"), running: true }
-  if (s.outcome === "failed") return { label: C.red("FAILED"), running: false }
-  if (s.outcome === "succeeded") return { label: C.green("done"), running: false }
-  return { label: C.yellow(s.outcome ?? "unknown"), running: false }
+  if (!idle) return { label: C.cyan("RUNNING"), running: true, note: "" }
+  // Transcript beats the API's own verdict — see transcriptError().
+  if (logErr) return { label: C.red("FAILED"), running: false, note: logErr }
+  if (s.outcome === "failed") return { label: C.red("FAILED"), running: false, note: "" }
+  if (s.outcome === "succeeded") return { label: C.green("done"), running: false, note: "" }
+  return { label: C.yellow(s.outcome ?? "unknown"), running: false, note: "" }
 }
 
 const fmtAge = (ms: number) => {
@@ -95,8 +112,11 @@ async function snapshot(api: Awaited<ReturnType<typeof connect>>, json: boolean)
   const sessions = await api.get<Session[]>("/api/session")
   const rows = fleet(sessions)
 
+  const errs = new Map<string, string | null>()
+  for (const [slug] of rows) errs.set(slug, await transcriptError(slug))
+
   if (json) {
-    console.log(JSON.stringify(rows.map(([slug, s]) => ({ slug, ...classify(s), id: s.id, cost: s.cost, tokens: s.tokens })), null, 2))
+    console.log(JSON.stringify(rows.map(([slug, s]) => ({ slug, ...classify(s, errs.get(slug) ?? null), id: s.id, cost: s.cost, tokens: s.tokens })), null, 2))
     return
   }
 
@@ -110,14 +130,14 @@ async function snapshot(api: Awaited<ReturnType<typeof connect>>, json: boolean)
   let running = 0
   let cost = 0
   for (const [slug, s] of rows) {
-    const c = classify(s)
+    const c = classify(s, errs.get(slug) ?? null)
     if (c.running) running++
     cost += s.cost ?? 0
     const elapsed = fmtAge((s.time?.idle ?? now) - (s.time?.created ?? now))
     const tok = `${fmtTok(s.tokens?.input)}/${fmtTok(s.tokens?.output)}`
     console.log(
       `  ${slug.padEnd(16)} ${c.label.padEnd(17)} ${elapsed.padEnd(9)} ${tok.padEnd(11)} ` +
-        `$${(s.cost ?? 0).toFixed(3).padEnd(7)} ${C.dim(s.model?.id ?? "?")}`,
+        `$${(s.cost ?? 0).toFixed(3).padEnd(7)} ${c.note ? C.red(c.note) : C.dim(s.model?.id ?? "?")}`,
     )
   }
   console.log(

@@ -183,3 +183,26 @@ Two things to be aware of:
 - `--auto` auto-approves every permission, so agents run shell commands in
   their worktree unreviewed. That is the point of a hands-off run, but it is
   why each agent is isolated in its own worktree and branch.
+
+### Status signals are unreliable in *both* directions
+
+Observed across the Wave-1 run:
+
+- opencode reported `outcome: succeeded` for a session whose provider stream
+  died (`The provider response ended unexpectedly`).
+- The transcript's `Error:` line appeared for two agents whose work was
+  actually complete — the stream died *after* the work, while emitting the
+  final report. `ui-kit` was marked FAILED yet produced 48 files that
+  typecheck clean and pass 79 tests.
+
+So neither the API's `outcome` nor the transcript is trustworthy alone.
+`monitor.ts` errs toward reporting FAILED; read that as **"needs checking"**,
+not "broken". The only authoritative check is running the gates against the
+branch:
+
+```bash
+cd ../yourcrm-<slug> && bun run typecheck && bun test
+```
+
+Long runs are the most affected: both stream deaths hit agents above ~190k
+tokens. Expect it on the biggest jobs, and verify rather than re-run blindly.
