@@ -3,6 +3,11 @@
 
 import type { ModuleDefinition } from "./types"
 import {
+  basePath as peopleBasePath,
+  createRoutes as createPeopleRoutes,
+  openApiPaths as peopleOpenApiPaths,
+} from "./people"
+import {
   basePath as systemBasePath,
   createRoutes as createSystemRoutes,
   openApiPaths as systemOpenApiPaths,
@@ -15,5 +20,6 @@ import {
  * instead of editing this file or `v1.ts` by hand.
  */
 export const moduleRoutes: ModuleDefinition[] = [
+  { path: peopleBasePath, createRoutes: createPeopleRoutes, openApiPaths: peopleOpenApiPaths },
   { path: systemBasePath, createRoutes: createSystemRoutes, openApiPaths: systemOpenApiPaths },
 ]
