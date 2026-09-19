@@ -51,6 +51,7 @@ function makeDefinition(overrides: Partial<CustomFieldDefinition> = {}): CustomF
     label: "VIP level",
     fieldType: "select",
     options: ["gold", "silver"],
+    defaultValue: null,
     required: false,
     displayOrder: 0,
     ...overrides,

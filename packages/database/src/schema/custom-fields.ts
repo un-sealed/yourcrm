@@ -38,8 +38,21 @@ export function isCustomFieldType(value: unknown): value is CustomFieldType {
 export type CustomFieldOptions = string[] | { value: string; label?: string }[] | null
 
 /**
+ * Value pre-filled when a record is created without this field.
+ *
+ * Added additively by the custom-objects module (spec 33) — `default` is
+ * part of its P0 field-definition scope. Nullable, so every existing row
+ * and every existing insert path keeps working unchanged. Defaults are
+ * validated against the field's own type like any other value: a bad
+ * default must not become a back door for invalid data.
+ */
+export type CustomFieldDefaultValue = string | number | boolean | string[] | null
+
+/**
  * Admin-defined field on a default or custom object (`object_type` is the
- * object key, e.g. "person", "deal"). `key` is the stable programmatic name,
+ * object key, e.g. "person", "deal" — or, for a user-defined object, that
+ * object's immutable slug from `custom_object_definitions`; see
+ * schema/custom-objects.ts). `key` is the stable programmatic name,
  * unique per (workspace, object); `options` holds the allowed choices for
  * select/multiselect; `display_order` drives form/column layout.
  */
@@ -53,6 +66,8 @@ export const customFieldDefinitions = pgTable(
     label: varchar("label", { length: 255 }).notNull(),
     fieldType: varchar("field_type", { length: 32 }).notNull(),
     options: jsonb("options").$type<CustomFieldOptions>(),
+    /** Added by 0200_custom_objects (additive, nullable). */
+    defaultValue: jsonb("default_value").$type<CustomFieldDefaultValue>(),
     required: boolean("required").notNull().default(false),
     displayOrder: integer("display_order").notNull().default(0),
   },
