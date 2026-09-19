@@ -6,7 +6,7 @@ import { requestId } from "./middleware/request-id"
 import { logger } from "./middleware/logger"
 import { auth } from "./middleware/auth"
 import { internalError, notFound } from "./middleware/errors"
-import { healthRoutes } from "./routes/health"
+import { healthRoutes, metricsMiddleware, metricsRoutes, readyRoutes } from "./routes/health"
 import { v1Routes } from "./routes/v1"
 import { openApiRoutes } from "./routes/openapi"
 
@@ -30,9 +30,14 @@ export function createApp() {
 
   app.use("*", requestId())
   app.use("*", logger())
+  // Observability: counts request count/duration by route+status for /metrics.
+  app.use("*", metricsMiddleware())
   app.use("*", auth())
 
   app.route("/health", healthRoutes())
+  // Readiness (live dependency checks) and metrics (METRICS_ENABLED-gated).
+  app.route("/ready", readyRoutes())
+  app.route("/metrics", metricsRoutes())
   app.route("/api/v1", v1Routes())
   app.route("/", openApiRoutes())
 

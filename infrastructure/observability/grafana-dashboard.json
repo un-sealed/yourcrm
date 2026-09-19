@@ -1,0 +1,76 @@
+{
+  "title": "YourCRM API",
+  "uid": "yourcrm-api",
+  "schemaVersion": 39,
+  "version": 1,
+  "tags": ["yourcrm"],
+  "timezone": "browser",
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Request rate by route",
+      "targets": [
+        {
+          "expr": "sum by (route) (rate(yourcrm_http_requests_total[5m]))",
+          "legendFormat": "{{route}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Error rate (5xx share)",
+      "targets": [
+        {
+          "expr": "sum by (route) (rate(yourcrm_http_requests_total{status=~\"5..\"}[5m])) / sum by (route) (rate(yourcrm_http_requests_total[5m]))",
+          "legendFormat": "{{route}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "p95 latency by route",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (route, le) (rate(yourcrm_http_request_duration_ms_bucket[5m])))",
+          "legendFormat": "{{route}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Dependency status",
+      "targets": [
+        {
+          "expr": "yourcrm_dependency_up",
+          "legendFormat": "{{name}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Queue depth",
+      "targets": [
+        {
+          "expr": "yourcrm_queue_depth",
+          "legendFormat": "{{queue}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Process memory",
+      "targets": [
+        {
+          "expr": "yourcrm_process_memory_bytes",
+          "legendFormat": "{{kind}}"
+        }
+      ]
+    }
+  ]
+}
