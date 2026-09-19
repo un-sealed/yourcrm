@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# One branch = one run; a new push cancels the superseded run so a dozen
+# agents pushing at once don't queue up stale checks.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pipeline:
+    name: Format / typecheck / lint / test / build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          # Must match the `packageManager` pin in package.json.
+          bun-version: "1.4.2"
+
+      - name: Restore Bun + Turborepo caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            .turbo
+          key: ${{ runner.os }}-bun-turbo-${{ hashFiles('bun.lock', 'turbo.json') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-turbo-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Format check
+        run: bun run format:check
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Test
+        run: bun run test
+
+      - name: Build
+        run: bun run build
