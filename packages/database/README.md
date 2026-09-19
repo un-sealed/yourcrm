@@ -17,3 +17,15 @@ Shared database access layer — the ONLY place postgres connections are created
 pgvector / pg_trgm are enabled in `0000_extensions.sql` for future AI
 retrieval and fuzzy search. Domain tables (people, companies, leads, …)
 are added by module agents following the `0001_foundation.sql` pattern.
+
+## People tables (module reference)
+
+- `src/schema/people.ts` — `people` (+ `person_emails`, `person_phones`).
+  `company_id` is a plain uuid with an index and no FK (companies land
+  later); contact tables FK to `people(id)` with cascade.
+- `src/repositories/people-repository.ts` — `createPeopleRepository()`
+  wraps `createBaseRepository(people)` and adds search, contact methods
+  and one-primary-per-channel enforcement. Import via subpath (repositories
+  are not barrelled):
+  `import { createPeopleRepository } from "@yourcrm/database/src/repositories/people-repository"`
+- `migrations/0010_people.sql` — the DDL mirror of the schema file.
