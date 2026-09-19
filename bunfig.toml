@@ -1,0 +1,8 @@
+[install]
+# Bun workspaces are enabled by default via root package.json `workspaces`.
+# This file exists to document Bun-specific settings for agents.
+auto = "fallback"
+exact = false
+
+[run]
+bun = true

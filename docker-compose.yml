@@ -1,0 +1,75 @@
+name: yourcrm-local
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: yourcrm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: yourcrm
+      POSTGRES_PASSWORD: yourcrm_dev
+      POSTGRES_DB: yourcrm
+    ports:
+      # Host 5442 avoids clashing with other local Postgres instances.
+      - "5442:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yourcrm -d yourcrm"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: yourcrm-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: yourcrm-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "mc", "--version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Creates the `yourcrm` bucket on first start. Runs once per `up`.
+  minio-init:
+    image: quay.io/minio/mc:latest
+    container_name: yourcrm-minio-init
+    depends_on:
+      minio:
+        condition: service_started
+    entrypoint: >
+      /bin/sh -c "
+      sleep 3;
+      mc alias set local http://minio:9000 minioadmin minioadmin;
+      mc mb --ignore-existing local/yourcrm;
+      mc anonymous set download local/yourcrm || true;
+      echo 'MinIO bucket ready';
+      "
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:

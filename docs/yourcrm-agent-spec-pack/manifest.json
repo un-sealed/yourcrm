@@ -1,0 +1,302 @@
+{
+  "product": "YourCRM",
+  "version": "2026",
+  "module_count": 59,
+  "files": [
+    {
+      "file": "00-project-initialization.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "01-architecture.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "02-design-system.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "03-data-model.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "04-authentication.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "05-users-teams-permissions.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "06-people.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "07-companies.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "08-leads.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "09-deals.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "10-pipelines.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "11-activities.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "12-tasks.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "13-calendar.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "14-email.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "15-unified-inbox.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "16-whatsapp.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "17-calling.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "18-products.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "19-quotes.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "20-invoices-payments.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "21-support.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "22-knowledge-base.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "23-forms.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "24-marketing.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "25-automation.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "26-reports.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "27-dashboards.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "28-search.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "29-files.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "30-import-export.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "31-integrations.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "32-api-webhooks.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "33-custom-objects-fields.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "34-ai-assistant.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "35-ai-fields-data-capture.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "36-ai-agents.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "37-ai-conversation-intelligence.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "38-ai-governance.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "39-mcp.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "40-settings-security-compliance.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "41-users-teams-permissions.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "42-onboarding.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "43-notifications.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "44-mobile-pwa.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "45-customer-portal.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "46-customer-success.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "47-sales-engagement.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "48-booking-links.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "49-marketplace-sdk.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "50-observability-backups.md",
+      "type": "module",
+      "handoff_ready": true
+    },
+    {
+      "file": "AGENT-DEPENDENCIES.md",
+      "type": "shared",
+      "handoff_ready": true
+    },
+    {
+      "file": "AGENT-PROMPT-TEMPLATE.md",
+      "type": "shared",
+      "handoff_ready": true
+    },
+    {
+      "file": "AGENTS.md",
+      "type": "shared",
+      "handoff_ready": true
+    },
+    {
+      "file": "CLAUDE.md",
+      "type": "shared",
+      "handoff_ready": true
+    },
+    {
+      "file": "DATA-MODEL-CONTRACTS.md",
+      "type": "shared",
+      "handoff_ready": true
+    },
+    {
+      "file": "EVENTS-AND-INTEGRATIONS.md",
+      "type": "shared",
+      "handoff_ready": true
+    },
+    {
+      "file": "MASTER-ROADMAP.md",
+      "type": "shared",
+      "handoff_ready": true
+    },
+    {
+      "file": "README.md",
+      "type": "shared",
+      "handoff_ready": true
+    }
+  ]
+}

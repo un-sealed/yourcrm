@@ -1,0 +1,30 @@
+{
+  "name": "@yourcrm/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build src/index.ts --target bun --outfile dist/index.js --external ioredis --external postgres",
+    "start": "bun run dist/index.js",
+    "test": "bun test",
+    "lint": "eslint src --max-warnings=0",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "@yourcrm/auth": "workspace:*",
+    "@yourcrm/config": "workspace:*",
+    "@yourcrm/crm": "workspace:*",
+    "@yourcrm/events": "workspace:*",
+    "@yourcrm/permissions": "workspace:*",
+    "@yourcrm/validation": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "eslint": "^9.34.0",
+    "typescript": "^5.9.2"
+  }
+}

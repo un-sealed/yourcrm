@@ -1,0 +1,31 @@
+{
+  "name": "yourcrm",
+  "private": true,
+  "version": "0.1.0",
+  "description": "YourCRM — AI-native, self-hostable open-source CRM (Bun + Turborepo monorepo)",
+  "packageManager": "bun@1.4.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "bunx drizzle-kit generate --config=packages/database/drizzle.config.ts",
+    "db:migrate": "bun run ./packages/database/src/migrate.ts",
+    "db:seed": "bun run ./packages/database/src/seed.ts",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "eslint": "^9.34.0",
+    "prettier": "3.6.2",
+    "turbo": "2.5.4",
+    "typescript": "5.9.2",
+    "typescript-eslint": "^8.44.0"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": false,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@yourcrm/config": ["./packages/config/src"],
+      "@yourcrm/validation": ["./packages/validation/src"],
+      "@yourcrm/database": ["./packages/database/src"],
+      "@yourcrm/auth": ["./packages/auth/src"],
+      "@yourcrm/permissions": ["./packages/permissions/src"],
+      "@yourcrm/events": ["./packages/events/src"],
+      "@yourcrm/storage": ["./packages/storage/src"],
+      "@yourcrm/notifications": ["./packages/notifications/src"],
+      "@yourcrm/search": ["./packages/search/src"],
+      "@yourcrm/crm": ["./packages/crm/src"],
+      "@yourcrm/ai": ["./packages/ai/src"],
+      "@yourcrm/agents": ["./packages/agents/src"],
+      "@yourcrm/workflows": ["./packages/workflows/src"],
+      "@yourcrm/integrations": ["./packages/integrations/src"],
+      "@yourcrm/ui": ["./packages/ui/src"]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "apps/*/node_modules",
+    "packages/*/node_modules",
+    "apps/*/.next",
+    "apps/*/dist",
+    "packages/*/dist"
+  ]
+}

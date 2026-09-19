@@ -1,0 +1,27 @@
+{
+  "name": "@yourcrm/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build src/index.ts --target bun --outfile dist/index.js --external ioredis",
+    "start": "bun run dist/index.js",
+    "test": "bun test",
+    "lint": "eslint src --max-warnings=0",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@yourcrm/config": "workspace:*",
+    "@yourcrm/events": "workspace:*",
+    "bullmq": "^5.29.0",
+    "ioredis": "^5.6.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "eslint": "^9.34.0",
+    "typescript": "^5.9.2"
+  }
+}
