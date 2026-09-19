@@ -30,6 +30,10 @@ export const SEARCH_OBJECT_TYPES = [
   "form",
   "product",
   "invoice",
+  // Added by the Knowledge Base agent (spec 22) — kept in step by hand with
+  // `packages/database/src/schema/search.ts` and
+  // `apps/web/app/app/search/types.ts`.
+  "article",
 ] as const
 
 export type SearchObjectType = (typeof SEARCH_OBJECT_TYPES)[number]

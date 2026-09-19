@@ -37,6 +37,10 @@ export const SEARCH_OBJECT_TYPES = [
   "form",
   "product",
   "invoice",
+  // Added by the Knowledge Base agent (spec 22) — kept in step by hand with
+  // `packages/database/src/schema/search.ts` and
+  // `packages/crm/src/search/types.ts`.
+  "article",
 ] as const
 
 export type SearchObjectType = (typeof SEARCH_OBJECT_TYPES)[number]
@@ -52,6 +56,7 @@ export const OBJECT_LABELS: Record<string, string> = {
   form: "Forms",
   product: "Products",
   invoice: "Invoices",
+  article: "Knowledge Base",
 }
 
 /** List route each object type lives under. Detail pages append the record id. */
@@ -66,6 +71,7 @@ const OBJECT_ROUTES: Record<string, string> = {
   form: "/app/forms",
   product: "/app/products",
   invoice: "/app/invoices",
+  article: "/app/knowledge-base",
 }
 
 export function objectLabel(objectType: string): string {
