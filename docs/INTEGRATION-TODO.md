@@ -49,6 +49,10 @@ barrel, then a few `emit` calls in the owning service.
 | Sequences | `sequence.enrolled` `.step_executed` `.stopped` `.replied` | 47 §9 |
 | Search | `search.executed` `command.executed` | 28 §9 |
 | Knowledge Base | `article.created` `.updated` `.published` | 22 §9 |
+| Support | `ticket.created` `.assigned` `.escalated` `.resolved` | 21 §9 |
+
+Note: spec 21 §10 automation hooks are blocked on the Support group — the
+automation engine listens on the event bus, so no events means no triggers.
 
 (Already added this session: `CustomObjectEvents`, `IntegrationEvents`,
 `ConversationEvents`, `email.bounced`, `email.thread_linked`, `call.started`,
