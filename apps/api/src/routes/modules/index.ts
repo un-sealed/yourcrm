@@ -8,6 +8,11 @@ import {
   openApiPaths as activitiesOpenApiPaths,
 } from "./activities"
 import {
+  basePath as aiAgentsBasePath,
+  createRoutes as createAiAgentsRoutes,
+  openApiPaths as aiAgentsOpenApiPaths,
+} from "./ai-agents"
+import {
   basePath as aiGovernanceBasePath,
   createRoutes as createAiGovernanceRoutes,
   openApiPaths as aiGovernanceOpenApiPaths,
@@ -18,6 +23,11 @@ import {
   openApiPaths as aiOpenApiPaths,
 } from "./ai"
 import {
+  basePath as apiWebhooksBasePath,
+  createRoutes as createApiWebhooksRoutes,
+  openApiPaths as apiWebhooksOpenApiPaths,
+} from "./api-webhooks"
+import {
   basePath as authBasePath,
   createRoutes as createAuthRoutes,
   openApiPaths as authOpenApiPaths,
@@ -27,6 +37,11 @@ import {
   createRoutes as createAutomationRoutes,
   openApiPaths as automationOpenApiPaths,
 } from "./automation"
+import {
+  basePath as bookingLinksBasePath,
+  createRoutes as createBookingLinksRoutes,
+  openApiPaths as bookingLinksOpenApiPaths,
+} from "./booking-links"
 import {
   basePath as calendarBasePath,
   createRoutes as createCalendarRoutes,
@@ -43,10 +58,20 @@ import {
   openApiPaths as companiesOpenApiPaths,
 } from "./companies"
 import {
+  basePath as conversationIntelligenceBasePath,
+  createRoutes as createConversationIntelligenceRoutes,
+  openApiPaths as conversationIntelligenceOpenApiPaths,
+} from "./conversation-intelligence"
+import {
   basePath as customObjectsBasePath,
   createRoutes as createCustomObjectsRoutes,
   openApiPaths as customObjectsOpenApiPaths,
 } from "./custom-objects"
+import {
+  basePath as customerSuccessBasePath,
+  createRoutes as createCustomerSuccessRoutes,
+  openApiPaths as customerSuccessOpenApiPaths,
+} from "./customer-success"
 import {
   basePath as dashboardsBasePath,
   createRoutes as createDashboardsRoutes,
@@ -88,10 +113,35 @@ import {
   openApiPaths as invoicesOpenApiPaths,
 } from "./invoices"
 import {
+  basePath as knowledgeBaseBasePath,
+  createRoutes as createKnowledgeBaseRoutes,
+  openApiPaths as knowledgeBaseOpenApiPaths,
+} from "./knowledge-base"
+import {
   basePath as leadsBasePath,
   createRoutes as createLeadsRoutes,
   openApiPaths as leadsOpenApiPaths,
 } from "./leads"
+import {
+  basePath as marketingBasePath,
+  createRoutes as createMarketingRoutes,
+  openApiPaths as marketingOpenApiPaths,
+} from "./marketing"
+import {
+  basePath as marketplaceBasePath,
+  createRoutes as createMarketplaceRoutes,
+  openApiPaths as marketplaceOpenApiPaths,
+} from "./marketplace"
+import {
+  basePath as notificationsBasePath,
+  createRoutes as createNotificationsRoutes,
+  openApiPaths as notificationsOpenApiPaths,
+} from "./notifications"
+import {
+  basePath as onboardingBasePath,
+  createRoutes as createOnboardingRoutes,
+  openApiPaths as onboardingOpenApiPaths,
+} from "./onboarding"
 import {
   basePath as peopleBasePath,
   createRoutes as createPeopleRoutes,
@@ -102,6 +152,11 @@ import {
   createRoutes as createPipelinesRoutes,
   openApiPaths as pipelinesOpenApiPaths,
 } from "./pipelines"
+import {
+  basePath as portalBasePath,
+  createRoutes as createPortalRoutes,
+  openApiPaths as portalOpenApiPaths,
+} from "./portal"
 import {
   basePath as productsBasePath,
   createRoutes as createProductsRoutes,
@@ -122,6 +177,21 @@ import {
   createRoutes as createSearchRoutes,
   openApiPaths as searchOpenApiPaths,
 } from "./search"
+import {
+  basePath as sequencesBasePath,
+  createRoutes as createSequencesRoutes,
+  openApiPaths as sequencesOpenApiPaths,
+} from "./sequences"
+import {
+  basePath as settingsBasePath,
+  createRoutes as createSettingsRoutes,
+  openApiPaths as settingsOpenApiPaths,
+} from "./settings"
+import {
+  basePath as supportBasePath,
+  createRoutes as createSupportRoutes,
+  openApiPaths as supportOpenApiPaths,
+} from "./support"
 import {
   basePath as systemBasePath,
   createRoutes as createSystemRoutes,
@@ -151,14 +221,19 @@ import {
  */
 export const moduleRoutes: ModuleDefinition[] = [
   { path: activitiesBasePath, createRoutes: createActivitiesRoutes, openApiPaths: activitiesOpenApiPaths },
+  { path: aiAgentsBasePath, createRoutes: createAiAgentsRoutes, openApiPaths: aiAgentsOpenApiPaths },
   { path: aiGovernanceBasePath, createRoutes: createAiGovernanceRoutes, openApiPaths: aiGovernanceOpenApiPaths },
   { path: aiBasePath, createRoutes: createAiRoutes, openApiPaths: aiOpenApiPaths },
+  { path: apiWebhooksBasePath, createRoutes: createApiWebhooksRoutes, openApiPaths: apiWebhooksOpenApiPaths },
   { path: authBasePath, createRoutes: createAuthRoutes, openApiPaths: authOpenApiPaths },
   { path: automationBasePath, createRoutes: createAutomationRoutes, openApiPaths: automationOpenApiPaths },
+  { path: bookingLinksBasePath, createRoutes: createBookingLinksRoutes, openApiPaths: bookingLinksOpenApiPaths },
   { path: calendarBasePath, createRoutes: createCalendarRoutes, openApiPaths: calendarOpenApiPaths },
   { path: callingBasePath, createRoutes: createCallingRoutes, openApiPaths: callingOpenApiPaths },
   { path: companiesBasePath, createRoutes: createCompaniesRoutes, openApiPaths: companiesOpenApiPaths },
+  { path: conversationIntelligenceBasePath, createRoutes: createConversationIntelligenceRoutes, openApiPaths: conversationIntelligenceOpenApiPaths },
   { path: customObjectsBasePath, createRoutes: createCustomObjectsRoutes, openApiPaths: customObjectsOpenApiPaths },
+  { path: customerSuccessBasePath, createRoutes: createCustomerSuccessRoutes, openApiPaths: customerSuccessOpenApiPaths },
   { path: dashboardsBasePath, createRoutes: createDashboardsRoutes, openApiPaths: dashboardsOpenApiPaths },
   { path: dealsBasePath, createRoutes: createDealsRoutes, openApiPaths: dealsOpenApiPaths },
   { path: emailBasePath, createRoutes: createEmailRoutes, openApiPaths: emailOpenApiPaths },
@@ -167,13 +242,22 @@ export const moduleRoutes: ModuleDefinition[] = [
   { path: importExportBasePath, createRoutes: createImportExportRoutes, openApiPaths: importExportOpenApiPaths },
   { path: integrationsBasePath, createRoutes: createIntegrationsRoutes, openApiPaths: integrationsOpenApiPaths },
   { path: invoicesBasePath, createRoutes: createInvoicesRoutes, openApiPaths: invoicesOpenApiPaths },
+  { path: knowledgeBaseBasePath, createRoutes: createKnowledgeBaseRoutes, openApiPaths: knowledgeBaseOpenApiPaths },
   { path: leadsBasePath, createRoutes: createLeadsRoutes, openApiPaths: leadsOpenApiPaths },
+  { path: marketingBasePath, createRoutes: createMarketingRoutes, openApiPaths: marketingOpenApiPaths },
+  { path: marketplaceBasePath, createRoutes: createMarketplaceRoutes, openApiPaths: marketplaceOpenApiPaths },
+  { path: notificationsBasePath, createRoutes: createNotificationsRoutes, openApiPaths: notificationsOpenApiPaths },
+  { path: onboardingBasePath, createRoutes: createOnboardingRoutes, openApiPaths: onboardingOpenApiPaths },
   { path: peopleBasePath, createRoutes: createPeopleRoutes, openApiPaths: peopleOpenApiPaths },
   { path: pipelinesBasePath, createRoutes: createPipelinesRoutes, openApiPaths: pipelinesOpenApiPaths },
+  { path: portalBasePath, createRoutes: createPortalRoutes, openApiPaths: portalOpenApiPaths },
   { path: productsBasePath, createRoutes: createProductsRoutes, openApiPaths: productsOpenApiPaths },
   { path: quotesBasePath, createRoutes: createQuotesRoutes, openApiPaths: quotesOpenApiPaths },
   { path: reportsBasePath, createRoutes: createReportsRoutes, openApiPaths: reportsOpenApiPaths },
   { path: searchBasePath, createRoutes: createSearchRoutes, openApiPaths: searchOpenApiPaths },
+  { path: sequencesBasePath, createRoutes: createSequencesRoutes, openApiPaths: sequencesOpenApiPaths },
+  { path: settingsBasePath, createRoutes: createSettingsRoutes, openApiPaths: settingsOpenApiPaths },
+  { path: supportBasePath, createRoutes: createSupportRoutes, openApiPaths: supportOpenApiPaths },
   { path: systemBasePath, createRoutes: createSystemRoutes, openApiPaths: systemOpenApiPaths },
   { path: tasksBasePath, createRoutes: createTasksRoutes, openApiPaths: tasksOpenApiPaths },
   { path: unifiedInboxBasePath, createRoutes: createUnifiedInboxRoutes, openApiPaths: unifiedInboxOpenApiPaths },

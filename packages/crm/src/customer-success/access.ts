@@ -39,7 +39,7 @@ export function csPermission(
 }
 
 /** True when the caller administers the workspace. */
-export function isWorkspaceAdmin(ctx: CustomerSuccessServiceContext): boolean {
+export function isCsWorkspaceAdmin(ctx: CustomerSuccessServiceContext): boolean {
   return checkPermission(csPermission(ctx, "admin")).allowed
 }
 
@@ -48,5 +48,5 @@ export function isWorkspaceAdmin(ctx: CustomerSuccessServiceContext): boolean {
  * computed from the session context only, never from request input.
  */
 export function resolveAccountRowScope(ctx: CustomerSuccessServiceContext): CsAccountRowScope {
-  return isWorkspaceAdmin(ctx) ? { kind: "workspace" } : { kind: "own", actorId: ctx.actorId }
+  return isCsWorkspaceAdmin(ctx) ? { kind: "workspace" } : { kind: "own", actorId: ctx.actorId }
 }

@@ -24,8 +24,6 @@ export {
   CustomerSuccessEvents,
   KnowledgeBaseEvents,
   MarketingEvents,
-  MarketplaceEvents,
-  NotificationEvents,
   OnboardingEvents,
   PortalEvents,
   SecurityEvents,

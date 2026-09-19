@@ -219,3 +219,90 @@ export const NotificationEvents = {
   Delivered: "notification.delivered",
   Failed: "notification.failed",
 } as const
+
+export const MarketplaceEvents = {
+  AppRegistered: "app.registered",
+  AppInstalled: "app.installed",
+  AppUninstalled: "app.uninstalled",
+  ScopesGranted: "app.scopes_granted",
+  AppScopeDenied: "app.scope_denied",
+  AppError: "app.error",
+} as const
+
+export const SupportEvents = {
+  TicketCreated: "ticket.created",
+  TicketUpdated: "ticket.updated",
+  TicketAssigned: "ticket.assigned",
+  TicketEscalated: "ticket.escalated",
+  TicketResolved: "ticket.resolved",
+  TicketClosed: "ticket.closed",
+  TicketCommented: "ticket.commented",
+} as const
+
+export const KnowledgeBaseEvents = {
+  ArticleCreated: "article.created",
+  ArticleUpdated: "article.updated",
+  ArticlePublished: "article.published",
+  ArticleArchived: "article.archived",
+} as const
+
+export const SequenceEvents = {
+  Enrolled: "sequence.enrolled",
+  StepExecuted: "sequence.step_executed",
+  Stopped: "sequence.stopped",
+  Replied: "sequence.replied",
+} as const
+
+export const SecurityEvents = {
+  SettingChanged: "security.setting_changed",
+  UserInvited: "user.invited",
+  InviteRevoked: "user.invite_revoked",
+  RoleUpdated: "role.updated",
+  MemberDeactivated: "user.deactivated",
+  DataRequestCreated: "compliance.data_request_created",
+} as const
+
+export const TeamEvents = {
+  Created: "team.created",
+  Updated: "team.updated",
+  MemberAdded: "team.member_added",
+  MemberRemoved: "team.member_removed",
+} as const
+
+export const PortalEvents = {
+  Login: "portal.login",
+  MagicLinkRequested: "portal.magic_link_requested",
+  TicketCreated: "portal.ticket_created",
+  QuoteAccepted: "portal.quote_accepted",
+} as const
+
+export const OnboardingEvents = {
+  Started: "onboarding.started",
+  StepCompleted: "onboarding.step_completed",
+  Completed: "onboarding.completed",
+} as const
+
+export const MarketingEvents = {
+  CampaignCreated: "campaign.created",
+  CampaignSent: "campaign.sent",
+  Unsubscribed: "marketing.unsubscribed",
+} as const
+
+export const CustomerSuccessEvents = {
+  AccountCreated: "cs_account.created",
+  HealthScored: "cs_account.health_scored",
+  RenewalUpcoming: "cs_account.renewal_upcoming",
+} as const
+
+export const BookingEvents = {
+  LinkCreated: "booking_link.created",
+  Booked: "booking.created",
+  Cancelled: "booking.cancelled",
+} as const
+
+export const WebhookEvents = {
+  SubscriptionCreated: "webhook.subscription_created",
+  DeliverySucceeded: "webhook.delivery_succeeded",
+  DeliveryFailed: "webhook.delivery_failed",
+  DeliveryDeadLettered: "webhook.delivery_dead_lettered",
+} as const

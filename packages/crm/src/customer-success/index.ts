@@ -5,7 +5,7 @@ export {
   createCustomerSuccessService,
 } from "./service"
 export type { CustomerSuccessService } from "./service"
-export { CS_OBJECT, csPermission, isWorkspaceAdmin, resolveAccountRowScope } from "./access"
+export { CS_OBJECT, csPermission, isCsWorkspaceAdmin, resolveAccountRowScope } from "./access"
 export {
   applyCsPlaybookSchema,
   createCsAccountSchema,
