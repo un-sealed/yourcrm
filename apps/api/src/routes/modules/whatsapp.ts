@@ -14,6 +14,11 @@ import {
   whatsAppTemplateSchema,
   type WhatsAppService,
 } from "@yourcrm/crm/src/whatsapp"
+import {
+  defineIntegrationProvider,
+  getIntegrationProviderRegistry,
+  type IntegrationProvider,
+} from "@yourcrm/integrations"
 import { getDb, writeAudit } from "@yourcrm/database"
 import { createIntegrationsRepository } from "@yourcrm/database/src/repositories/integrations-repository"
 import {
@@ -74,6 +79,14 @@ export type WhatsAppRouteDeps = {
  * credentials"). A real Meta Cloud API adapter would be registered the same
  * way, selected by the connection's `providerId`.
  */
+/**
+ * Module-scoped lazy service, so provider registration below stays
+ * side-effect free at import time (no getDb() until a webhook actually
+ * arrives). Same shape as apps/api/src/routes/modules/email.ts.
+ */
+let moduleService: WhatsAppService | null = null
+const resolveModuleService = (): WhatsAppService => (moduleService ??= defaultService())
+
 function defaultService(): WhatsAppService {
   const db = getDb()
   const repository = createWhatsAppRepository()
@@ -445,3 +458,26 @@ export {
   templateEnvelope,
   templateListEnvelope,
 }
+
+/**
+ * Vendor adapters must be in the registry before `defaultIntegrationProviders()`
+ * builds the catalogue, otherwise no connection can be created for this
+ * provider and inbound webhooks have nothing to resolve.
+ */
+function registerWhatsAppProviders(): void {
+  const registry = getIntegrationProviderRegistry()
+  const consoleProvider = createWhatsAppConsoleProvider({
+    onInboundMessage: async (input) => {
+      await resolveModuleService().ingestInboundMessage(input)
+    },
+    onStatusUpdate: async (input) => {
+      await resolveModuleService().ingestStatusUpdate(input)
+    },
+  })
+  // Idempotent: a duplicate id just means the module graph was evaluated
+  // twice (hot reload, or a test importing this alongside another route).
+  if (registry.has(consoleProvider.id)) return
+  registry.register(defineIntegrationProvider(consoleProvider as unknown as IntegrationProvider))
+}
+
+registerWhatsAppProviders()

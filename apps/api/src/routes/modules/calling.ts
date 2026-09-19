@@ -22,6 +22,11 @@ import {
   updateCallSchema,
   type CallingService,
 } from "@yourcrm/crm/src/calling"
+import {
+  defineIntegrationProvider,
+  getIntegrationProviderRegistry,
+  type IntegrationProvider,
+} from "@yourcrm/integrations"
 import { getDb, writeAudit } from "@yourcrm/database"
 import { createCallingRepository } from "@yourcrm/database/src/repositories/calling-repository"
 import type {
@@ -88,6 +93,14 @@ export type CallingRouteDeps = {
  * and `apps/api` declare the dependency today), both provider lists collapse
  * into one and this note goes away.
  */
+/**
+ * Module-scoped lazy service, so provider registration below stays
+ * side-effect free at import time (no getDb() until a webhook actually
+ * arrives). Same shape as apps/api/src/routes/modules/email.ts.
+ */
+let moduleService: CallingService | null = null
+const resolveModuleService = (): CallingService => (moduleService ??= defaultService())
+
 function defaultService(): CallingService {
   const db = getDb()
   const repository = createCallingRepository()
@@ -431,3 +444,23 @@ export const openApiPaths = {
 }
 
 export { callDetailEnvelope, callEnvelope, callListEnvelope, recordingEnvelope }
+
+/**
+ * Vendor adapters must be in the registry before `defaultIntegrationProviders()`
+ * builds the catalogue, otherwise no connection can be created for this
+ * provider and inbound webhooks have nothing to resolve.
+ */
+function registerCallingProviders(): void {
+  const registry = getIntegrationProviderRegistry()
+  const consoleProvider = createConsoleCallingProvider({
+    onStatusEvent: async (input) => {
+      await resolveModuleService().applyProviderStatusEvent(input)
+    },
+  })
+  // Idempotent: a duplicate id just means the module graph was evaluated
+  // twice (hot reload, or a test importing this alongside another route).
+  if (registry.has(consoleProvider.id)) return
+  registry.register(defineIntegrationProvider(consoleProvider as unknown as IntegrationProvider))
+}
+
+registerCallingProviders()
