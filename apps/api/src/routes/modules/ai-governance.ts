@@ -677,3 +677,14 @@ export const openApiPaths = {
 }
 
 export { aiActionRequestEnvelope, aiActionRequestListEnvelope, aiPolicyListEnvelope }
+
+/**
+ * The governance composition root, exported for the ONE other module that
+ * legitimately needs it: `ai-agents.ts`. An AI agent's only route to a
+ * write is `AiActionProposalPort.requestAction`, and it must be the SAME
+ * service instance shape a human sees in the queue — one applier registry,
+ * one policy resolution, one audit trail. Re-wiring a second governance
+ * service in the agents module would be exactly the duplicate foundation
+ * `AGENTS.md` forbids.
+ */
+export { defaultService as createDefaultAiGovernanceService }
