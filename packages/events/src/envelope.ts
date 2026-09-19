@@ -205,16 +205,17 @@ export const ConversationEvents = {
   Closed: "conversation.closed",
 } as const
 
-/**
- * Marketplace / Plugin SDK events (spec 49-marketplace-sdk). `entityType`
- * is `"app_installation"`; `entityId` the installation id. `after` carries
- * the granted (and, on install, denied) scopes — never a credential, since
- * this module never issues or stores one.
- */
-export const MarketplaceEvents = {
-  AppRegistered: "app.registered",
-  AppInstalled: "app.installed",
-  AppUninstalled: "app.uninstalled",
-  AppScopeDenied: "app.scope_denied",
-  AppError: "app.error",
+// Notifications module (spec 43-notifications, P0). `Delivered` / `Failed`
+// are reserved for the future email/push/SMS delivery worker (see
+// `packages/crm/src/notifications/types.ts` `NotificationDeliveryPort`) —
+// P0 never emits them, only `Created`, `Read`, `AllRead`, `Deleted` and
+// `PreferencesUpdated`.
+export const NotificationEvents = {
+  Created: "notification.created",
+  Read: "notification.read",
+  AllRead: "notification.all_read",
+  Deleted: "notification.deleted",
+  PreferencesUpdated: "notification.preferences_updated",
+  Delivered: "notification.delivered",
+  Failed: "notification.failed",
 } as const
