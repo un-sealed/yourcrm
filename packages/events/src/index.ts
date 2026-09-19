@@ -16,6 +16,7 @@ export {
   DashboardEvents,
   IntegrationEvents,
   InvoiceEvents,
+  MarketplaceEvents,
   QuoteEvents,
   ReportEvents,
   SearchEvents,
