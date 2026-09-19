@@ -43,8 +43,10 @@ JOBS=0                 # 0 = no cap, launch every agent at once
 MODELS_OVERRIDE=""
 ONLY=""
 WAVE="${WAVE:-2}"
+LINK_DEPS=0    # --link: symlink node_modules instead of installing per worktree
 
 cmd="${1:-help}"; shift || true
+for a in "$@"; do [[ "$a" == "--link" ]] && LINK_DEPS=1; done
 while getopts ":j:m:o:w:" opt; do
   case "$opt" in
     j) JOBS="$OPTARG" ;;
@@ -175,10 +177,17 @@ up() {
         psql -U yourcrm -d postgres -c "CREATE DATABASE $dbname" >/dev/null 2>&1 \
         && log "created database $dbname" || true
     fi
-    if [[ ! -d "$wt/node_modules" ]]; then
-      log "installing deps in $slug"
-      (cd "$wt" && bun install --frozen-lockfile >/dev/null 2>&1) \
-        || warn "bun install failed in $slug"
+    if [[ ! -e "$wt/node_modules" ]]; then
+      if (( LINK_DEPS )); then
+        # Safe only because agents may not add dependencies: every worktree's
+        # node_modules is byte-identical to the root's. Saves ~750MB each.
+        ln -s "$REPO/node_modules" "$wt/node_modules"
+        log "linked deps in $slug"
+      else
+        log "installing deps in $slug"
+        (cd "$wt" && bun install --frozen-lockfile >/dev/null 2>&1) \
+          || warn "bun install failed in $slug"
+      fi
     fi
   done < <(modules)
 }

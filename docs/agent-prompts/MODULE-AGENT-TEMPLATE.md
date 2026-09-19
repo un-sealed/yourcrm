@@ -40,6 +40,22 @@ apps/api/src/routes/modules/people.ts
 apps/web/app/app/people/
 ```
 
+### Four things People learned the hard way — do not rediscover them
+
+1. **Audit goes through a port, not a direct import.** `packages/crm` may not
+   import `@yourcrm/database`, so a service cannot call `writeAudit()`.
+   Declare an `AuditWriter` port in your `types.ts`, call `deps.audit({...})`
+   in the service, and bind it to the real `writeAudit` in your API route
+   file. Copy People's `types.ts` + `service.ts` + route wiring exactly.
+2. **Route factories must be side-effect free.** Calling `getDb()` inside
+   your `createRoutes()` breaks foundation tests at import time. Lazy-init
+   the service inside the handler instead.
+3. **Use `@yourcrm/testing`, never hand-rolled fixtures**: `makeSession`,
+   `makeServiceContext`, `expectDenied`, `captureEvents`, `createApiClient`,
+   `createStore`. Your denial test must use `expectDenied`.
+4. **Run `bun run gen:barrels`** after adding your module folder; it now
+   handles module directories. Never hand-edit a barrel.
+
 **Mirror its structure, naming, layering, error handling, test style and file
 organization.** Where People does something a certain way, do the same thing.
 Do not invent a different pattern because you think it is better. Consistency
@@ -149,8 +165,10 @@ You do not edit the registry.
 ## 7. Hard rules
 
 1. **Never run `bun add`, `bun install <pkg>`, `npm install` or edit any
-   `package.json`.** Every dependency you need is already installed. If one is
-   genuinely missing, stop and report it.
+   `package.json`.** If your module needs a workspace dependency declared
+   (e.g. `apps/api` needing your package), **list it in your report under
+   Blockers** — People did exactly this and it was the right call. The
+   integrator wires it. Do not symlink around it in a way you then commit.
 2. **No FK constraints to tables you do not own.** Other modules' tables may
    not exist yet when your migration runs. Reference them as a plain
    `uuid` column with an index, and document the intended relationship in a
@@ -163,7 +181,7 @@ You do not edit the registry.
 6. Every service method calls `requirePermission()` **first**, before any read
    or write.
 7. Every mutation emits a domain event (`@yourcrm/events`) **and** writes an
-   audit row via the shared audit helper. Use the exported constant for each
+   audit row via the injected `AuditWriter` port (see §2.1). Use the exported constant for each
    event name in §6 — never a bare string literal. If a constant you need is
    not exported by `@yourcrm/events`, that is a stop condition (§9): report
    it, do not add it yourself and do not fall back to a literal.

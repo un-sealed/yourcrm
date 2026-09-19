@@ -11,8 +11,10 @@
  * other line (doc comments, constants, types) byte-for-byte.
  *
  * Conventions enforced:
- * - Only top-level `*.ts` siblings are barrelled (no recursion into
- *   subdirectories — those keep their own barrels).
+ * - Top-level `*.ts` siblings are barrelled, plus any subdirectory that has
+ *   its own `index.ts` (module folders such as `crm/src/people/`). Without
+ *   this, a module folder is invisible to importers and every agent invents
+ *   its own subpath import — see People's downstream notes.
  * - `index.ts`, `*.test.ts` and `*.d.ts` are never self-exported.
  * - One line per module, double quotes, no semicolons (repo Prettier style).
  *
@@ -22,7 +24,7 @@
  *   (wired as `bun run gen:barrels` once the root package.json adds it —
  *   see scripts/README.md; editing package.json is outside this agent's scope)
  */
-import { readdir, readFile, writeFile } from "node:fs/promises"
+import { readdir, readFile, stat, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 
 const ROOT = join(import.meta.dir, "..")
@@ -35,11 +37,25 @@ const TARGETS = [
 const RELATIVE_EXPORT = /^export \* from "\.\/[^"]+";?$/
 
 async function barrelModules(dir: string, barrel: string): Promise<string[]> {
-  return (await readdir(dir))
+  const entries = await readdir(dir)
+  const files = entries
     .filter((f) => f.endsWith(".ts"))
     .filter((f) => f !== barrel && !f.endsWith(".test.ts") && !f.endsWith(".d.ts"))
     .map((f) => f.slice(0, -".ts".length))
-    .sort()
+
+  // Module folders (e.g. crm/src/people/) are barrelled via their own index.
+  const dirs: string[] = []
+  for (const e of entries) {
+    if (e.endsWith(".ts")) continue
+    try {
+      if (!(await stat(join(dir, e))).isDirectory()) continue
+      await stat(join(dir, e, "index.ts"))
+      dirs.push(e)
+    } catch {
+      // no index.ts — not an importable module folder
+    }
+  }
+  return [...new Set([...files, ...dirs])].sort()
 }
 
 async function regenerate(dir: string, barrel: string): Promise<{ path: string; next: string }> {
