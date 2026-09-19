@@ -8,6 +8,11 @@ import {
   openApiPaths as activitiesOpenApiPaths,
 } from "./activities"
 import {
+  basePath as automationBasePath,
+  createRoutes as createAutomationRoutes,
+  openApiPaths as automationOpenApiPaths,
+} from "./automation"
+import {
   basePath as calendarBasePath,
   createRoutes as createCalendarRoutes,
   openApiPaths as calendarOpenApiPaths,
@@ -17,6 +22,11 @@ import {
   createRoutes as createCompaniesRoutes,
   openApiPaths as companiesOpenApiPaths,
 } from "./companies"
+import {
+  basePath as customObjectsBasePath,
+  createRoutes as createCustomObjectsRoutes,
+  openApiPaths as customObjectsOpenApiPaths,
+} from "./custom-objects"
 import {
   basePath as dashboardsBasePath,
   createRoutes as createDashboardsRoutes,
@@ -42,6 +52,11 @@ import {
   createRoutes as createImportExportRoutes,
   openApiPaths as importExportOpenApiPaths,
 } from "./import-export"
+import {
+  basePath as integrationsBasePath,
+  createRoutes as createIntegrationsRoutes,
+  openApiPaths as integrationsOpenApiPaths,
+} from "./integrations"
 import {
   basePath as invoicesBasePath,
   createRoutes as createInvoicesRoutes,
@@ -101,13 +116,16 @@ import {
  */
 export const moduleRoutes: ModuleDefinition[] = [
   { path: activitiesBasePath, createRoutes: createActivitiesRoutes, openApiPaths: activitiesOpenApiPaths },
+  { path: automationBasePath, createRoutes: createAutomationRoutes, openApiPaths: automationOpenApiPaths },
   { path: calendarBasePath, createRoutes: createCalendarRoutes, openApiPaths: calendarOpenApiPaths },
   { path: companiesBasePath, createRoutes: createCompaniesRoutes, openApiPaths: companiesOpenApiPaths },
+  { path: customObjectsBasePath, createRoutes: createCustomObjectsRoutes, openApiPaths: customObjectsOpenApiPaths },
   { path: dashboardsBasePath, createRoutes: createDashboardsRoutes, openApiPaths: dashboardsOpenApiPaths },
   { path: dealsBasePath, createRoutes: createDealsRoutes, openApiPaths: dealsOpenApiPaths },
   { path: filesBasePath, createRoutes: createFilesRoutes, openApiPaths: filesOpenApiPaths },
   { path: formsBasePath, createRoutes: createFormsRoutes, openApiPaths: formsOpenApiPaths },
   { path: importExportBasePath, createRoutes: createImportExportRoutes, openApiPaths: importExportOpenApiPaths },
+  { path: integrationsBasePath, createRoutes: createIntegrationsRoutes, openApiPaths: integrationsOpenApiPaths },
   { path: invoicesBasePath, createRoutes: createInvoicesRoutes, openApiPaths: invoicesOpenApiPaths },
   { path: leadsBasePath, createRoutes: createLeadsRoutes, openApiPaths: leadsOpenApiPaths },
   { path: peopleBasePath, createRoutes: createPeopleRoutes, openApiPaths: peopleOpenApiPaths },

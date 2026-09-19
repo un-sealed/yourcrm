@@ -13,8 +13,10 @@
   },
   "dependencies": {
     "@yourcrm/events": "workspace:*",
+    "@yourcrm/integrations": "workspace:*",
     "@yourcrm/permissions": "workspace:*",
     "@yourcrm/validation": "workspace:*",
+    "@yourcrm/workflows": "workspace:*",
     "zod": "^3.23.8"
   },
   "devDependencies": {

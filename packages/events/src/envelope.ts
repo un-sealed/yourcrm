@@ -162,3 +162,25 @@ export const SearchEvents = {
   Executed: "search.executed",
   CommandExecuted: "command.executed",
 } as const
+
+export const IntegrationEvents = {
+  Connected: "integration.connected",
+  Disconnected: "integration.disconnected",
+  Reconnected: "integration.reconnected",
+  HealthChecked: "integration.health_checked",
+  Errored: "integration.error",
+  WebhookReceived: "integration.webhook_received",
+} as const
+
+export const CustomObjectEvents = {
+  ObjectCreated: "custom_object.created",
+  ObjectUpdated: "custom_object.updated",
+  ObjectDeleted: "custom_object.deleted",
+  FieldCreated: "custom_field.created",
+  FieldUpdated: "custom_field.updated",
+  FieldDeleted: "custom_field.deleted",
+  SchemaUpdated: "schema.updated",
+  RecordCreated: "custom_record.created",
+  RecordUpdated: "custom_record.updated",
+  RecordDeleted: "custom_record.deleted",
+} as const
