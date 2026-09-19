@@ -84,6 +84,7 @@ barrel, then a few `emit` calls in the owning service.
 | Support | `ticket.created` `.assigned` `.escalated` `.resolved` | 21 §9 |
 | Security / Teams | `security.setting_changed` `user.invited` `role.updated` `team.member_added` | 40, 41 |
 | AI governance | `ai.action_rejected` `ai.action_applied` `ai.policy_changed` `ai.kill_switch_enabled` | 38 §9 |
+| MCP | `mcp.connected` `mcp.tool_called` `mcp.write_approved` `mcp.disconnected` | 39 §9 |
 | Portal | `portal.login` `portal.quote_accepted` `portal.ticket_created` | 45 §9 |
 | Onboarding | `onboarding.started` `.step_completed` `.completed` | 42 §9 |
 
@@ -266,6 +267,20 @@ Wire it to the email service only when you want AI to be able to send.
 - **Ticket reader unwired** — `deps.tickets` is `undefined` until `support`
   merges; tickets read as empty, never unscoped. The port takes the scope as
   its first argument and the implementation must apply it in SQL.
+
+## 6e. MCP needs a host with database access
+
+`apps/mcp` must not depend on the database package (enforced by a source-text
+test), so `createMcpServer({runtime, resolveCaller})` takes its ports as
+arguments. Production currently defaults to `createUnconfiguredMcpRuntime()`:
+it lists the 12 tools and refuses every call with `MCP_RUNTIME_NOT_CONFIGURED`.
+Development uses a fixture runtime, so the server is drivable today.
+
+To make MCP real, an integrator must build the runtime from a host that
+already has the database — most likely `apps/api`, or a thin `apps/mcp-host`.
+Same for session resolution: `MCP_API_TOKEN` exists in the env schema but
+resolving it to a user needs the auth store, so the default resolver returns
+an anonymous caller that reaches nothing.
 
 ## 7. Partial modules (counted as done, but aren't)
 
