@@ -1,0 +1,209 @@
+# ---------------------------------------------------------------------------
+# YourCRM — production / self-host compose file.
+#
+# One-command self-host path:
+#
+#   cp .env.example .env   # then set real secrets (see infrastructure/README.md)
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Services: web, api, worker, mcp (+ postgres, redis, minio).
+# Everything is wired by service name (postgres, redis, minio, api) and
+# reads config from the environment — no secrets are baked into images.
+# Postgres and MinIO persist in named volumes (pgdata, minimodata).
+# ---------------------------------------------------------------------------
+
+name: yourcrm-prod
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-yourcrm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-yourcrm}
+      POSTGRES_DB: ${POSTGRES_DB:-yourcrm}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infrastructure/docker/postgres/00-extensions.sql:/docker-entrypoint-initdb.d/00-extensions.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-yourcrm} -d ${POSTGRES_DB:-yourcrm}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: quay.io/minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    volumes:
+      - minimodata:/data
+    healthcheck:
+      test: ["CMD", "mc", "--version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Creates the object-storage bucket on first start. Runs once per `up`.
+  minio-init:
+    image: quay.io/minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_started
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      STORAGE_BUCKET: ${STORAGE_BUCKET:-yourcrm}
+    entrypoint: >
+      /bin/sh -c "
+      sleep 3;
+      mc alias set local http://minio:9000 \"$$MINIO_ROOT_USER\" \"$$MINIO_ROOT_PASSWORD\";
+      mc mb --ignore-existing local/\"$$STORAGE_BUCKET\";
+      echo 'MinIO bucket ready';
+      "
+
+  api:
+    build:
+      context: .
+      target: api
+    image: yourcrm-api:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    environment:
+      - NODE_ENV=production
+      - APP_URL=${APP_URL:-http://localhost:3000}
+      - API_URL=${API_URL:-http://localhost:4000}
+      - API_PORT=4000
+      - DATABASE_URL=postgres://${POSTGRES_USER:-yourcrm}:${POSTGRES_PASSWORD:-yourcrm}@postgres:5432/${POSTGRES_DB:-yourcrm}
+      - REDIS_URL=redis://redis:6379
+      - STORAGE_ENDPOINT=http://minio:9000
+      - STORAGE_REGION=${STORAGE_REGION:-us-east-1}
+      - STORAGE_BUCKET=${STORAGE_BUCKET:-yourcrm}
+      - STORAGE_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
+      - STORAGE_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - STORAGE_FORCE_PATH_STYLE=true
+      # Secrets pass through only when set on the host or `.env`. When absent
+      # the app falls back to its built-in dev defaults — fine for a smoke
+      # test, never for real data (generate values per
+      # infrastructure/README.md). List form keeps them *unset* rather than
+      # empty so startup validation sees a missing value, not a bad one.
+      - SESSION_SECRET
+      - ENCRYPTION_KEY
+      - BETTER_AUTH_SECRET
+    ports:
+      - "${API_PORT:-4000}:4000"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'bun -e "const r=await fetch(''http://localhost:4000/health'').catch(()=>null);if(!r||!r.ok)process.exit(1)"',
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+  web:
+    build:
+      context: .
+      target: web
+    image: yourcrm-web:latest
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      WEB_PORT: 3000
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      API_URL: ${API_URL:-http://localhost:4000}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'bun -e "const r=await fetch(''http://localhost:3000/'').catch(()=>null);if(!r||!r.ok)process.exit(1)"',
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  worker:
+    build:
+      context: .
+      target: worker
+    image: yourcrm-worker:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    environment:
+      - NODE_ENV=production
+      - APP_URL=${APP_URL:-http://localhost:3000}
+      - API_URL=${API_URL:-http://localhost:4000}
+      - DATABASE_URL=postgres://${POSTGRES_USER:-yourcrm}:${POSTGRES_PASSWORD:-yourcrm}@postgres:5432/${POSTGRES_DB:-yourcrm}
+      - REDIS_URL=redis://redis:6379
+      - STORAGE_ENDPOINT=http://minio:9000
+      - STORAGE_REGION=${STORAGE_REGION:-us-east-1}
+      - STORAGE_BUCKET=${STORAGE_BUCKET:-yourcrm}
+      - STORAGE_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
+      - STORAGE_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - STORAGE_FORCE_PATH_STYLE=true
+      # Secrets pass through only when set (see api service comment).
+      - SESSION_SECRET
+      - ENCRYPTION_KEY
+
+  mcp:
+    build:
+      context: .
+      target: mcp
+    image: yourcrm-mcp:latest
+    restart: unless-stopped
+    # stdio transport: keep stdin open so the process stays attached.
+    stdin_open: true
+    tty: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - APP_URL=${APP_URL:-http://localhost:3000}
+      - API_URL=${API_URL:-http://localhost:4000}
+      - DATABASE_URL=postgres://${POSTGRES_USER:-yourcrm}:${POSTGRES_PASSWORD:-yourcrm}@postgres:5432/${POSTGRES_DB:-yourcrm}
+      - REDIS_URL=redis://redis:6379
+      # Secrets pass through only when set (see api service comment).
+      - SESSION_SECRET
+      - ENCRYPTION_KEY
+      - MCP_PORT=4100
+
+volumes:
+  pgdata:
+  redisdata:
+  minimodata:
