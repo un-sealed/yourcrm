@@ -26,6 +26,32 @@ enqueuing, so enrollments park at their current step. Same pattern was noted
 for automation. Add the dep, then replace the documented four-line body.
 Also needs `registerSequenceStepRunner(...)` in the worker bootstrap.
 
+**[!] `subscribeWebhookDeliveryDispatcher()` is never called.**
+`apps/api/src/index.ts` must call it once at boot (next to
+`subscribeAutomationDispatcher()`). Without it, no domain event ever produces
+a webhook delivery — the module is inert. Exported from
+`apps/api/src/routes/modules/api-webhooks.ts`.
+
+**[!] Public API-key auth is not mounted.**
+`apps/api/src/middleware/auth.ts` is owned by another concern, so the
+api-webhooks agent exposed the pieces instead of editing it. One line in
+`apps/api/src/app.ts`, immediately after `app.use("*", auth())`:
+```ts
+import { publicApiKeyAuth } from "./lib/api-key-auth"
+import { resolvePublicApiKey } from "./routes/modules/api-webhooks"
+app.use("*", publicApiKeyAuth({ resolve: resolvePublicApiKey }))
+```
+The middleware never overwrites an existing session, so order is safe. Until
+it is mounted, `Authorization: Bearer <ycrm_sk_…>` is simply unauthenticated.
+
+**[!] Webhook delivery needs the same `bullmq` wiring as automation.**
+`defaultQueue()` in `apps/api/src/routes/modules/api-webhooks.ts` logs
+`webhook_delivery_enqueued` instead of enqueuing, so deliveries stay
+`pending`. The four-line replacement is documented in that function. The
+worker side also needs `registerWebhookSender(...)` in the bootstrap —
+`apps/worker/src/jobs/webhooks.ts` explains what to bind, and
+`@yourcrm/worker` must declare `@yourcrm/database` to construct the service.
+
 **[!] Run the generators after every merge.**
 ```
 bun run scripts/gen-barrels.ts && bun run scripts/gen-routes.ts && bun install
@@ -50,9 +76,18 @@ barrel, then a few `emit` calls in the owning service.
 | Search | `search.executed` `command.executed` | 28 §9 |
 | Knowledge Base | `article.created` `.updated` `.published` | 22 §9 |
 | Support | `ticket.created` `.assigned` `.escalated` `.resolved` | 21 §9 |
+| API & Webhooks | `webhook.delivery_succeeded` `.delivery_failed` `api_key.created` | 32 §9 |
 
 Note: spec 21 §10 automation hooks are blocked on the Support group — the
 automation engine listens on the event bus, so no events means no triggers.
+
+Note: the API & Webhooks group is declared locally in
+`packages/crm/src/api-webhooks/event-names.ts` (as `WebhookEvents`) and
+imported everywhere in that module — no literals. Move the object verbatim
+into `envelope.ts`, add it to the barrel, then reduce that file to a
+re-export. These three names must NOT become subscribable: a subscription to
+`webhook.delivery_failed` would enqueue a delivery per failed delivery.
+`SUBSCRIBABLE_EVENT_NAMES` filters them out and the dispatcher re-checks.
 
 (Already added this session: `CustomObjectEvents`, `IntegrationEvents`,
 `ConversationEvents`, `email.bounced`, `email.thread_linked`, `call.started`,
@@ -67,6 +102,8 @@ calendar/report/dashboard constants.)
 Reachable by URL only until added:
 
 - `/app/sequences` → suggest the **Engage** group
+- `/app/api-webhooks` → suggest a **Settings / Developer** group (spec 32 §2
+  names `/app/settings/api`; the page is admin-only in the API)
 - `/app/marketing`, `/app/customer-success`, `/app/booking-links` *(pending agents)*
 - `/app/book/[slug]` is a **public** page and should NOT appear in nav
 
@@ -129,13 +166,24 @@ checking at exactly the seam where service and repository types could drift.
   `customer-portal` scope containment. Agents wrote tests proving their own
   designs correct, which is not the same as someone checking the designs are
   right.
+- **[~] Webhook SSRF has a residual TOCTOU window.**
+  `packages/crm/src/api-webhooks/url-guard.ts` re-resolves and re-checks the
+  target before every attempt, but the socket is opened by hostname, so a
+  resolver could answer differently between the check and the connect. The
+  guard hands the vetted addresses to the transport
+  (`WebhookTransportRequest.resolvedAddresses`) so a hardened transport can
+  pin one; the default `fetch` transport cannot. Closing it needs a custom
+  agent/dispatcher, which needs a dependency.
 
 ---
 
 ## 7. Partial modules (counted as done, but aren't)
 
-- **32 api-webhooks** — OpenAPI generation exists; no webhook subscription
-  model, no delivery/retry.
+- **32 api-webhooks** — ~~no webhook subscription model, no delivery/retry~~
+  now implemented (migration 0360: `webhook_subscriptions`,
+  `webhook_deliveries`, `api_keys`) but INERT until the three section-1
+  wiring items above are applied. OAuth apps and rate-limit buckets from
+  spec 32 §6 are still absent (P1).
 - **41 users-teams-permissions** — auth + policy engine exist; teams UI is
   being built by the `settings` agent.
 - **43 notifications** — table and contract exist; no module, no delivery.

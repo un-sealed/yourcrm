@@ -3,6 +3,7 @@ import { getRedis } from "./redis"
 import { QueueNames } from "./queues"
 import { runExampleJob } from "./jobs/example"
 import { AUTOMATION_RUN_JOB_NAME, runAutomationJob } from "./jobs/automation"
+import { WEBHOOK_DELIVERY_JOB_NAME, runWebhookDeliveryJob } from "./jobs/webhooks"
 
 /**
  * Job registration pattern: one named handler per job in `./jobs/*`,
@@ -12,6 +13,7 @@ import { AUTOMATION_RUN_JOB_NAME, runAutomationJob } from "./jobs/automation"
 export const JobHandlers = {
   "example.ping": runExampleJob,
   [AUTOMATION_RUN_JOB_NAME]: runAutomationJob,
+  [WEBHOOK_DELIVERY_JOB_NAME]: runWebhookDeliveryJob,
 } as const
 
 export type JobName = keyof typeof JobHandlers
