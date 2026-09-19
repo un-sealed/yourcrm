@@ -236,7 +236,7 @@ run_all() {
   while read -r slug; do
     local model="${pool[$(( i % ${#pool[@]} ))]}"
     i=$(( i + 1 ))
-    run_one "$slug" "$model" &
+    run_one "$slug" "$model" </dev/null &
     if (( JOBS > 0 )); then
       while (( $(jobs -rp | wc -l) >= JOBS )); do wait -n; done
     fi
