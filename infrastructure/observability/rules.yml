@@ -1,0 +1,50 @@
+# Alert-rule examples for YourCRM. Tune thresholds to your traffic.
+groups:
+  - name: yourcrm-api
+    interval: 30s
+    rules:
+      - alert: YourCrmApiDown
+        expr: up{job="yourcrm-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "YourCRM API is not scrapeable (process down or /metrics disabled?)"
+
+      - alert: YourCrmDependencyDown
+        expr: yourcrm_dependency_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Dependency {{ $labels.name }} failing readiness checks"
+
+      - alert: YourCrmHighErrorRate
+        expr: |
+          sum by (route) (rate(yourcrm_http_requests_total{status=~"5.."}[5m]))
+          /
+          sum by (route) (rate(yourcrm_http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "5xx rate above 5% on {{ $labels.route }}"
+
+      - alert: YourCrmHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum by (route, le) (rate(yourcrm_http_request_duration_ms_bucket[5m]))
+          ) > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p95 latency above 1s on {{ $labels.route }}"
+
+      - alert: YourCrmQueueBacklog
+        expr: yourcrm_queue_depth > 1000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Queue {{ $labels.queue }} backlog above 1000 jobs"

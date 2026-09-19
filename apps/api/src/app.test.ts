@@ -2,12 +2,18 @@ import { describe, expect, test } from "bun:test"
 import { createApp } from "./app"
 
 describe("api", () => {
-  test("GET /health returns status + request id", async () => {
+  test("GET /health is a cheap liveness probe with the stable shape", async () => {
     const res = await createApp().request("/health")
     expect(res.status).toBe(200)
     expect(res.headers.get("x-request-id")).toBeTruthy()
-    const body = (await res.json()) as { status: string; checks: Record<string, { ok: boolean }> }
-    expect(["ok", "degraded"]).toContain(body.status)
+    const body = (await res.json()) as {
+      status: string
+      version: string
+      checks: Record<string, { ok: boolean }>
+    }
+    // Liveness is always ok and keeps the shape the web status card reads.
+    expect(body.status).toBe("ok")
+    expect(body.version).toBeTruthy()
     expect(body.checks.database).toBeDefined()
     expect(body.checks.redis).toBeDefined()
     expect(body.checks.storage).toBeDefined()

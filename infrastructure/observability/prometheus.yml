@@ -1,0 +1,18 @@
+# Prometheus scrape config example for YourCRM.
+# Copy the job into your prometheus.yml. /metrics is DISABLED by default —
+# set METRICS_ENABLED=1 on the API first (see docs/operations.md), and prefer
+# scraping over a private network, never the public internet.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "rules.yml"
+
+scrape_configs:
+  - job_name: "yourcrm-api"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["localhost:4000"]
+        labels:
+          service: "yourcrm-api"
