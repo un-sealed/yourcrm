@@ -26,6 +26,20 @@ enqueuing, so enrollments park at their current step. Same pattern was noted
 for automation. Add the dep, then replace the documented four-line body.
 Also needs `registerSequenceStepRunner(...)` in the worker bootstrap.
 
+**[!] `subscribeWebhookDeliveryDispatcher()` is never called.**
+Must go in `apps/api/src/index.ts` at boot alongside the automation and
+sequence watchers, or the webhooks module is inert.
+
+**[!] API-key middleware is not mounted.**
+`apps/api/src/lib/api-key-auth.ts` exports `publicApiKeyAuth({ resolve })`;
+one line in `apps/api/src/app.ts` after `app.use("*", auth())`. Until then
+public API keys authenticate nothing.
+
+**[~] Post-merge one-liner: real ticket volume for CS health scores.**
+`customer-success` approximates "ticket volume" from `activities` because
+`support` was on a parallel branch. Both are merged now — swap it to the real
+`tickets` table (documented at the call site).
+
 **[!] Run the generators after every merge.**
 ```
 bun run scripts/gen-barrels.ts && bun run scripts/gen-routes.ts && bun install
@@ -128,6 +142,15 @@ checking at exactly the seam where service and repository types could drift.
 - **[~] Email HTML sanitiser is regex-based.** Fine while P0 renders text
   only; needs a real sanitiser (`dompurify`/`sanitize-html`) before any rich
   HTML view ships. Blocked on the no-new-dependencies rule.
+- **[~] Residual TOCTOU in webhook delivery.** The SSRF guard resolves and
+  vets addresses, but the default `fetch` transport connects by hostname and
+  cannot pin to the vetted IP. Closing it needs a custom dispatcher (a new
+  dependency). Documented by the agent rather than papered over.
+- **[i] API-key role clamp is a no-op today.** `owner` and `admin` allow
+  identical actions under the current policy, so an admin minting an
+  owner-scoped key is not an escalation *yet*. The clamp starts refusing it
+  the moment the shared policy separates the two roles.
+
 - **[~] Human security review not yet done** on: credential encryption
   (`integrations`), webhook signature verification, the `reports` SQL
   allowlist, `automation` permission inheritance, and — when it lands —
