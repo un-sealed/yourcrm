@@ -197,3 +197,17 @@ export const ConversationEvents = {
   Archived: "conversation.archived",
   Closed: "conversation.closed",
 } as const
+
+/**
+ * Marketplace / Plugin SDK events (spec 49-marketplace-sdk). `entityType`
+ * is `"app_installation"`; `entityId` the installation id. `after` carries
+ * the granted (and, on install, denied) scopes — never a credential, since
+ * this module never issues or stores one.
+ */
+export const MarketplaceEvents = {
+  AppRegistered: "app.registered",
+  AppInstalled: "app.installed",
+  AppUninstalled: "app.uninstalled",
+  AppScopeDenied: "app.scope_denied",
+  AppError: "app.error",
+} as const
