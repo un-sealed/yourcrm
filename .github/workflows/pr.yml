@@ -1,0 +1,70 @@
+name: PR guards
+
+# Mechanical enforcement of the AGENTS.md review checklist: one module per PR,
+# no dependency-manifest edits, none of the shortcuts a weak model reaches for.
+on:
+  pull_request:
+
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guards:
+    name: Scope + shortcut guards
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base branch
+        run: git fetch --no-tags --depth=100 origin "${{ github.base_ref }}"
+
+      - name: Collect changed files
+        id: changed
+        run: |
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/changed.txt
+          echo "Changed files:"
+          cat /tmp/changed.txt
+          echo "count=$(wc -l < /tmp/changed.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+
+      - name: Guard against multi-module PRs
+        run: |
+          # A "module directory" is one app or package (apps/<name>,
+          # packages/<name>). Files outside those trees (docs, .github, root
+          # configs) don't count toward the limit.
+          modules=$(grep -E '^(apps|packages)/' /tmp/changed.txt | cut -d/ -f1-2 | sort -u)
+          count=$(echo "$modules" | grep -c . || true)
+          if [ "$count" -gt 1 ]; then
+            echo "::error::PR touches more than one module directory (AGENTS.md: one module per PR). Split it."
+            echo "$modules"
+            exit 1
+          fi
+          echo "Module scope OK."
+
+      - name: Guard against dependency-manifest edits
+        run: |
+          # Wave-1 ground rule: never edit package.json; installs are frozen.
+          bad=$(grep -E '(^|/)package\.json$|^bun\.lock$' /tmp/changed.txt || true)
+          if [ -n "$bad" ]; then
+            echo "::error::PR modifies bun.lock or a package.json. Dependencies are frozen during Wave 1 — report a missing dependency as a blocker instead."
+            echo "$bad"
+            exit 1
+          fi
+          echo "Manifests untouched."
+
+      - name: Guard against review shortcuts
+        # pr.yml is excluded from its own scan: the pattern below literally
+        # contains the guarded strings, so it would otherwise flag itself.
+        run: |
+          # Catch exactly the shortcuts a weak model reaches for, on added lines only.
+          hits=$(git diff -U0 "origin/${{ github.base_ref }}...HEAD" -- . ':(exclude).github/workflows/pr.yml' | grep -E '^\+' | grep -vE '^\+\+\+' | grep -E 'eslint-disable|@ts-ignore|\.skip\(' || true)
+          if [ -n "$hits" ]; then
+            echo "::error::PR adds eslint-disable, @ts-ignore, or .skip(). Fix the underlying issue instead — these never reach the bar."
+            echo "$hits"
+            exit 1
+          fi
+          echo "No shortcuts found."

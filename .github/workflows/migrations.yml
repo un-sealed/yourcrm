@@ -1,0 +1,80 @@
+name: Migrations
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: migrations-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  migrate-and-seed:
+    name: Migrate + seed against real Postgres/Redis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: yourcrm
+          POSTGRES_PASSWORD: yourcrm
+          POSTGRES_DB: yourcrm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U yourcrm -d yourcrm"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      DATABASE_URL: postgres://yourcrm:yourcrm@localhost:5432/yourcrm
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          # Must match the `packageManager` pin in package.json.
+          bun-version: "1.4.2"
+
+      - name: Restore Bun install cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check for duplicate migration slots
+        run: |
+          files=$(ls packages/database/migrations/*.sql | xargs -n1 basename | sort)
+          dupes=$(echo "$files" | grep -oE '^[0-9]+' | sort | uniq -d)
+          if [ -n "$dupes" ]; then
+            echo "::error::Duplicate migration slot detected."
+            echo "::error::Two agents claimed the same migration slot. Rename your migration file to the next free numeric slot and rebase onto main."
+            echo "Conflicting slot(s): $dupes"
+            echo "$files" | grep -E "^($(echo "$dupes" | paste -sd'|' -))_"
+            exit 1
+          fi
+          echo "No duplicate migration slots."
+
+      - name: Run migrations
+        run: bun run db:migrate
+
+      - name: Run seed
+        run: bun run db:seed
