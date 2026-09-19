@@ -3,6 +3,10 @@ import { getRedis } from "./redis"
 import { QueueNames } from "./queues"
 import { runExampleJob } from "./jobs/example"
 import { AUTOMATION_RUN_JOB_NAME, runAutomationJob } from "./jobs/automation"
+import {
+  CONVERSATION_ANALYSIS_JOB_NAME,
+  runConversationAnalysisJob,
+} from "./jobs/conversation-intelligence"
 
 /**
  * Job registration pattern: one named handler per job in `./jobs/*`,
@@ -12,6 +16,7 @@ import { AUTOMATION_RUN_JOB_NAME, runAutomationJob } from "./jobs/automation"
 export const JobHandlers = {
   "example.ping": runExampleJob,
   [AUTOMATION_RUN_JOB_NAME]: runAutomationJob,
+  [CONVERSATION_ANALYSIS_JOB_NAME]: runConversationAnalysisJob,
 } as const
 
 export type JobName = keyof typeof JobHandlers
