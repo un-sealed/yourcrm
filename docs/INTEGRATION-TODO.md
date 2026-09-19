@@ -48,6 +48,7 @@ barrel, then a few `emit` calls in the owning service.
 | --- | --- | --- |
 | Sequences | `sequence.enrolled` `.step_executed` `.stopped` `.replied` | 47 §9 |
 | Search | `search.executed` `command.executed` | 28 §9 |
+| Knowledge Base | `article.created` `.updated` `.published` | 22 §9 |
 
 (Already added this session: `CustomObjectEvents`, `IntegrationEvents`,
 `ConversationEvents`, `email.bounced`, `email.thread_linked`, `call.started`,
@@ -73,6 +74,12 @@ Reachable by URL only until added:
 `apps/api/src/routes/modules/sequences.ts` re-creates the private
 `defaultService()` composition from `email.ts` because that module exports no
 factory. Export one shared factory from `email.ts` and delete the copy.
+
+**[~] `SEARCH_OBJECT_TYPES` is hand-synced across three files.**
+`packages/database/src/schema/search.ts`, `packages/crm/src/search/types.ts`
+and `apps/web/app/app/search/types.ts` must be edited together whenever a
+module becomes searchable (Knowledge Base added `"article"` to all three).
+A single shared constant would remove the drift risk.
 
 **[~] The filter model exists in four places.**
 `@yourcrm/ui`'s `FilterTree` is canonical; `@yourcrm/crm` and
