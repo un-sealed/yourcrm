@@ -40,6 +40,12 @@ public API keys authenticate nothing.
 `support` was on a parallel branch. Both are merged now — swap it to the real
 `tickets` table (documented at the call site).
 
+**[!] `registerCampaignBatchSender(...)` is unbound.**
+`apps/worker/src/jobs/campaigns.ts` takes an injected sender; binding it (the
+person→email lookup, unsubscribe-link injection, and the call into
+`@yourcrm/crm/src/email`) happens at `apps/worker/src/index.ts`. Until then
+campaigns claim batches and send nothing.
+
 **[!] Run the generators after every merge.**
 ```
 bun run scripts/gen-barrels.ts && bun run scripts/gen-routes.ts && bun install
