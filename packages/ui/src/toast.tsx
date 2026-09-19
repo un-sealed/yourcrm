@@ -15,18 +15,21 @@ export interface ToastData {
 
 export type NewToast = Omit<ToastData, "id"> & { id?: string }
 
-const toastVariants = cva("border px-4 py-3 shadow-md", {
-  variants: {
-    tone: {
-      default: "border-border bg-background text-foreground",
-      success: "border-emerald-500/40 bg-background text-foreground",
-      error: "border-destructive/50 bg-background text-foreground",
-      info: "border-sky-500/40 bg-background text-foreground",
-      warning: "border-amber-500/40 bg-background text-foreground",
+const toastVariants = cva(
+  "rounded-xl border border-border bg-card px-4 py-3 text-foreground shadow-pop",
+  {
+    variants: {
+      tone: {
+        default: "",
+        success: "border-l-4 border-l-emerald-500",
+        error: "border-l-4 border-l-destructive",
+        info: "border-l-4 border-l-sky-500",
+        warning: "border-l-4 border-l-amber-500",
+      },
     },
+    defaultVariants: { tone: "default" },
   },
-  defaultVariants: { tone: "default" },
-})
+)
 
 type ToastListener = () => void
 
@@ -142,7 +145,7 @@ export const Toaster = React.forwardRef<HTMLDivElement, ToasterProps>(function T
           key={item.id}
           data-slot="toast"
           data-tone={item.tone ?? "default"}
-          className={cn("rounded-md", toastVariants({ tone: item.tone ?? "default" }))}
+          className={toastVariants({ tone: item.tone ?? "default" })}
         >
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-0.5">

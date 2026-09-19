@@ -95,7 +95,7 @@ export default function UnifiedInboxPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">Inbox</h1>
+        <h1 className="text-xl font-semibold">Inbox</h1>
         <p className="text-sm text-muted-foreground">Email, WhatsApp and calls in one stream.</p>
       </div>
 

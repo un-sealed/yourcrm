@@ -24,14 +24,34 @@ const config: Config = {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        success: { DEFAULT: "hsl(var(--success))", foreground: "hsl(var(--primary-foreground))" },
+        warning: { DEFAULT: "hsl(var(--warning))", foreground: "hsl(var(--primary-foreground))" },
         card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
+        popover: { DEFAULT: "hsl(var(--popover))", foreground: "hsl(var(--popover-foreground))" },
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          muted: "hsl(var(--sidebar-muted))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+        },
       },
       borderRadius: {
         md: "var(--radius)",
         lg: "calc(var(--radius) + 2px)",
-        sm: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+        xl: "calc(var(--radius) + 6px)",
+      },
+      boxShadow: {
+        // NOTE: shadow keys must not match a `colors` key — Tailwind also
+        // generates `shadow-<color>` utilities, and a shared name makes the
+        // colour rule (e.g. `--tw-shadow-color: hsl(var(--card))`) win.
+        xs: "0 1px 2px 0 rgb(15 23 42 / 0.05)",
+        panel: "0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px -1px rgb(15 23 42 / 0.08)",
+        pop: "0 12px 32px -12px rgb(15 23 42 / 0.28)",
       },
     },
   },

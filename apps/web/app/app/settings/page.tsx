@@ -94,7 +94,7 @@ export default function SettingsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">Settings</h1>
+        <h1 className="text-xl font-semibold">Settings</h1>
         <p className="text-sm text-muted-foreground">
           Signed in as {me.user.name ?? me.user.email} · role {actorRole}
         </p>

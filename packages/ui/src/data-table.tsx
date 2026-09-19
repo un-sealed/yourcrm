@@ -232,11 +232,17 @@ export function DataTable<T>({
 
   return (
     <div ref={ref} data-slot="data-table" className={cn("flex flex-col gap-2", className)}>
-      <details className="self-end text-xs">
-        <summary className="cursor-pointer rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+      {/*
+        `group relative` + `hidden group-open:flex` on the panel matters:
+        the closed state of `<details>` hides its children through the UA
+        stylesheet, but any explicit `display` utility on the panel wins and
+        leaves the column picker permanently open and floating over the page.
+      */}
+      <details className="group relative self-end text-xs">
+        <summary className="cursor-pointer rounded-md px-2 py-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           Columns
         </summary>
-        <div className="absolute z-50 mt-1 flex flex-col gap-1 rounded-md border border-border bg-background p-2 shadow-md">
+        <div className="absolute right-0 z-50 mt-1 hidden max-h-72 w-48 flex-col gap-1 overflow-y-auto rounded-xl border border-border bg-popover p-2 shadow-pop group-open:flex">
           {columns.map((column) => {
             const position = order.includes(column.id) ? order.indexOf(column.id) : order.length
             return (
@@ -281,7 +287,7 @@ export function DataTable<T>({
         into an unreadable stack. Every existing `<DataTable>` usage is
         unaffected — no props changed, this is pure CSS.
       */}
-      <div className="overflow-x-auto rounded-md border border-border">
+      <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-panel">
         <table ref={tableRef} aria-label={ariaLabel} className="w-full min-w-max text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">
@@ -310,7 +316,7 @@ export function DataTable<T>({
                         : undefined
                     }
                     className={cn(
-                      "whitespace-nowrap px-3 py-2 font-medium text-muted-foreground",
+                      "whitespace-nowrap px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground",
                       ALIGN_CLASSES[column.align ?? "left"],
                     )}
                   >
@@ -403,7 +409,7 @@ export function DataTable<T>({
                               }
                             }}
                             className={cn(
-                              "whitespace-nowrap px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                              "whitespace-nowrap px-3 py-2.5 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                               ALIGN_CLASSES[column.align ?? "left"],
                             )}
                           >

@@ -236,7 +236,7 @@ export default function SequenceDetailPage() {
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="truncate text-2xl font-semibold">{sequence.name}</h1>
+            <h1 className="truncate text-xl font-semibold">{sequence.name}</h1>
             <Badge tone={sequenceStatusTone(sequence.status)}>
               {SEQUENCE_STATUS_LABELS[sequence.status] ?? sequence.status}
             </Badge>

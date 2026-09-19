@@ -168,7 +168,7 @@ export default function EmailThreadDetailPage() {
       {replying && lastMessage ? (
         <section
           aria-label="Reply"
-          className="rounded-lg border border-border bg-card p-4 shadow-sm"
+          className="rounded-xl border border-border bg-card p-4 shadow-panel"
         >
           <h2 className="mb-3 text-sm font-semibold">Reply</h2>
           <EmailComposer
@@ -192,7 +192,7 @@ export default function EmailThreadDetailPage() {
 
       <section
         aria-label="Linked records"
-        className="rounded-lg border border-border bg-card p-4 shadow-sm"
+        className="rounded-xl border border-border bg-card p-4 shadow-panel"
       >
         <h2 className="mb-3 text-sm font-semibold">Linked records</h2>
         <form
@@ -264,7 +264,7 @@ function EmailMessageCard({ detail }: { detail: EmailMessageDetailResponse }) {
   const ccLine = emailRecipientsLine(participants, "cc")
 
   return (
-    <article className="rounded-lg border border-border bg-card p-4 shadow-sm">
+    <article className="rounded-xl border border-border bg-card p-4 shadow-panel">
       <header className="flex flex-wrap items-baseline justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{emailSenderLabel(detail)}</p>

@@ -49,9 +49,7 @@ export const SavedViews = React.forwardRef<HTMLDivElement, SavedViewsProps>(func
             key={view.id}
             className={cn(
               "inline-flex items-center gap-0.5 rounded-full border transition-colors",
-              active
-                ? "border-primary bg-primary/10"
-                : "border-border bg-background hover:bg-accent",
+              active ? "border-primary/40 bg-primary/10" : "border-border bg-card hover:bg-accent",
             )}
           >
             <button
@@ -74,7 +72,7 @@ export const SavedViews = React.forwardRef<HTMLDivElement, SavedViewsProps>(func
                 ✎
               </summary>
               <form
-                className="absolute left-0 top-full z-50 mt-1 flex items-center gap-1 rounded-md border border-border bg-background p-1.5 shadow-md"
+                className="absolute left-0 top-full z-50 mt-1 flex items-center gap-1 rounded-xl border border-border bg-popover p-1.5 shadow-pop"
                 onSubmit={(event) => {
                   event.preventDefault()
                   const next = readNamedInput(event.currentTarget, "view-name").trim()

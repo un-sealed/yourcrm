@@ -95,7 +95,7 @@ export function Dialog({
   return (
     <div
       data-slot="dialog-overlay"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-[2px]"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onOpenChange(false)
@@ -112,7 +112,7 @@ export function Dialog({
         data-slot="dialog"
         onKeyDown={trapTab}
         className={cn(
-          "w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-lg",
+          "w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-pop",
           "focus-visible:outline-none",
           className,
         )}

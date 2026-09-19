@@ -25,11 +25,14 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(func
       {...props}
     >
       {icon !== undefined && icon !== null ? (
-        <div className="text-muted-foreground" aria-hidden="true">
+        <div
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-xs"
+          aria-hidden="true"
+        >
           {icon}
         </div>
       ) : null}
-      <p className="text-sm font-medium text-foreground">{title}</p>
+      <p className="text-sm font-semibold text-foreground">{title}</p>
       {description !== undefined && description !== null ? (
         <div className="max-w-sm text-sm text-muted-foreground">{description}</div>
       ) : null}

@@ -28,7 +28,7 @@ export const BulkBar = React.forwardRef<HTMLDivElement, BulkBarProps>(function B
       aria-label={`Bulk actions for ${selectedCount} selected`}
       data-slot="bulk-bar"
       className={cn(
-        "fixed bottom-4 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 shadow-lg",
+        "fixed bottom-4 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 rounded-xl border border-border bg-card/95 px-3 py-2 shadow-pop backdrop-blur",
         className,
       )}
       {...props}

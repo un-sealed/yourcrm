@@ -155,9 +155,9 @@ export function Combobox({
         onFocus={() => setOpen(true)}
         onKeyDown={handleKeyDown}
         className={cn(
-          "h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm",
+          "h-9 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground shadow-xs",
           "placeholder:text-muted-foreground",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
         )}
       />
       {open ? (
@@ -165,7 +165,7 @@ export function Combobox({
           id={listId}
           role="listbox"
           aria-label={label ?? "Options"}
-          className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md border border-border bg-background p-1 shadow-md"
+          className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-border bg-popover p-1 shadow-pop"
         >
           {filtered.length === 0 ? (
             <li className="px-2 py-1.5 text-sm text-muted-foreground">{emptyLabel}</li>
@@ -191,7 +191,7 @@ export function Combobox({
                     }
                   }}
                   className={cn(
-                    "cursor-pointer rounded-sm px-2 py-1.5 text-sm text-foreground",
+                    "cursor-pointer rounded-md px-2 py-1.5 text-sm text-foreground transition-colors",
                     active && "bg-accent",
                     option.disabled === true && "cursor-not-allowed opacity-50",
                   )}

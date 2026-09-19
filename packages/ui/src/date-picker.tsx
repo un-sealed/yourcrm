@@ -21,8 +21,8 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(fu
       data-slot="date-picker"
       aria-invalid={invalid || undefined}
       className={cn(
-        "h-9 w-full rounded-md border bg-background px-3 text-sm text-foreground shadow-sm transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "h-9 w-full rounded-lg border bg-card px-3 text-sm text-foreground shadow-xs transition-colors",
+        "focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
         "disabled:cursor-not-allowed disabled:opacity-50",
         "dark:[color-scheme:dark]",
         invalid ? "border-destructive" : "border-input",

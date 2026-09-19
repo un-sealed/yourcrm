@@ -5,7 +5,7 @@
 export function ModulePlaceholder({ title, spec }: { title: string; spec?: string }) {
   return (
     <div>
-      <h1 className="text-2xl font-semibold">{title}</h1>
+      <h1 className="text-xl font-semibold">{title}</h1>
       <div className="mt-6 rounded-lg border border-dashed p-10 text-center">
         <p className="text-sm font-medium">Coming soon</p>
         <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">

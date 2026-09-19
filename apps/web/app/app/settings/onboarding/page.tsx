@@ -13,7 +13,9 @@ export default function SettingsOnboardingPage() {
           real data — nothing here can be checked off by hand.
         </p>
       </div>
-      <OnboardingChecklist />
+      <section className="rounded-xl border border-border bg-card p-5 shadow-panel">
+        <OnboardingChecklist />
+      </section>
     </div>
   )
 }

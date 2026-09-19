@@ -33,7 +33,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(functi
       data-slot="checkbox"
       aria-checked={indeterminate === true ? "mixed" : undefined}
       className={cn(
-        "h-4 w-4 shrink-0 rounded-sm border border-input bg-background shadow-sm transition-colors",
+        "h-4 w-4 shrink-0 rounded-[5px] border border-input bg-card shadow-xs transition-colors",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         "checked:border-primary checked:bg-primary",
         "disabled:cursor-not-allowed disabled:opacity-50",

@@ -74,7 +74,7 @@ export default function MarketingOverviewPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <section className="rounded-lg border border-border p-4">
+        <section className="rounded-xl border border-border bg-card p-4 shadow-panel">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold">Segments</h2>
             <Link href="/app/marketing/segments" className={buttonVariants({ size: "sm" })}>
@@ -89,7 +89,7 @@ export default function MarketingOverviewPage() {
           <p className="text-sm text-muted-foreground">Saved audiences (filters over people)</p>
         </section>
 
-        <section className="rounded-lg border border-border p-4">
+        <section className="rounded-xl border border-border bg-card p-4 shadow-panel">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold">Campaigns</h2>
             <Link href="/app/marketing/campaigns" className={buttonVariants({ size: "sm" })}>

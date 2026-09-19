@@ -57,7 +57,12 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(function Tabs(
 
   return (
     <div ref={ref} data-slot="tabs" className={cn("flex flex-col gap-3", className)}>
-      <div role="tablist" aria-label={ariaLabel} onKeyDown={handleKeyDown} className="flex gap-1">
+      <div
+        role="tablist"
+        aria-label={ariaLabel}
+        onKeyDown={handleKeyDown}
+        className="inline-flex flex-wrap items-center gap-1 rounded-lg border border-border bg-muted/60 p-1"
+      >
         {items.map((item, index) => {
           const selected = item.value === value
           return (
@@ -75,12 +80,12 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(function Tabs(
               disabled={item.disabled}
               onClick={() => onValueChange(item.value)}
               className={cn(
-                "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                "rounded-md px-3 py-1.5 text-sm font-medium transition-all",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 "disabled:cursor-not-allowed disabled:opacity-50",
                 selected
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                  ? "bg-card text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               {item.label}

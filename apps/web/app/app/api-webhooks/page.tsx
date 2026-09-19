@@ -294,7 +294,7 @@ export default function ApiWebhooksPage() {
   ) : (
     <ul className="flex flex-col gap-3">
       {subscriptions.map((subscription) => (
-        <li key={subscription.id} className="rounded-lg border bg-card p-4 shadow-sm">
+        <li key={subscription.id} className="rounded-xl border border-border bg-card p-4 shadow-panel">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
@@ -370,7 +370,7 @@ export default function ApiWebhooksPage() {
         const subscription = subscriptionsById.get(delivery.subscriptionId)
         const open = expanded === delivery.id
         return (
-          <li key={delivery.id} className="rounded-lg border bg-card p-3 shadow-sm">
+          <li key={delivery.id} className="rounded-xl border border-border bg-card p-3 shadow-panel">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-col gap-1">
                 <div className="flex flex-wrap items-center gap-2">
@@ -464,7 +464,7 @@ export default function ApiWebhooksPage() {
       {keys.map((key) => (
         <li
           key={key.id}
-          className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-card p-3 shadow-sm"
+          className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card p-3 shadow-panel"
         >
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">

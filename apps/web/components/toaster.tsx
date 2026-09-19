@@ -8,7 +8,7 @@ export function Toaster() {
   return (
     <div className="fixed bottom-4 right-4 z-50 flex w-80 flex-col gap-2" aria-live="polite">
       {toasts.map((t) => (
-        <div key={t.id} className="rounded-lg border bg-card p-3 shadow-lg">
+        <div key={t.id} className="rounded-xl border border-border bg-card p-3 shadow-pop">
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-sm font-medium">{t.title}</p>

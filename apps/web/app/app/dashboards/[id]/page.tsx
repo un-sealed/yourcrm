@@ -469,7 +469,7 @@ export default function DashboardDetailPage() {
                 gridColumn: `${widget.positionX + 1} / span ${widget.width}`,
                 gridRow: `${widget.positionY + 1} / span ${widget.height}`,
               }}
-              className="flex flex-col gap-2 overflow-hidden rounded-md border border-border bg-card p-3 shadow-sm"
+              className="flex flex-col gap-2 overflow-hidden rounded-xl border border-border bg-card p-3 shadow-panel"
               aria-label={`${widget.title} (${widget.type} widget)`}
             >
               <div className="flex items-start justify-between gap-2">

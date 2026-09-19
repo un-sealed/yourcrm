@@ -74,7 +74,7 @@ export default function SequencesListPage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-semibold">Sequences</h1>
+          <h1 className="text-xl font-semibold">Sequences</h1>
           <p className="text-sm text-muted-foreground">
             Multi-step outreach that stops the moment somebody replies.
           </p>

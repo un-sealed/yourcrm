@@ -448,7 +448,7 @@ export default function DealsListPage() {
                   draggable
                   onDragStart={() => setDragId(deal.id)}
                   onDragEnd={() => setDragId(null)}
-                  className="flex flex-col gap-1 rounded-md border border-border bg-background p-2 shadow-xs"
+                  className="flex flex-col gap-1 rounded-lg border border-border bg-card p-2 shadow-xs"
                 >
                   <Link
                     href={`/app/deals/${deal.id}`}

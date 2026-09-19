@@ -263,7 +263,7 @@ export default function FilesListPage() {
 
       <form
         onSubmit={upload}
-        className="flex flex-col gap-3 rounded-md border border-border p-4"
+        className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-panel"
         aria-label="Upload a file"
       >
         <h2 className="text-sm font-semibold">Upload a file</h2>

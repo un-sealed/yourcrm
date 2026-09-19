@@ -250,7 +250,7 @@ export default function IntegrationsPage() {
                 return (
                   <article
                     key={provider.id}
-                    className="flex flex-col gap-3 rounded-lg border bg-card p-4 shadow-sm"
+                    className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-panel"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-col gap-1">

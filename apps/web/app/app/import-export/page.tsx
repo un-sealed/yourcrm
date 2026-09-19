@@ -306,7 +306,7 @@ export default function ImportExportListPage() {
         <form
           onSubmit={createImport}
           aria-label="New CSV import"
-          className="flex flex-col gap-2 rounded-md border p-4"
+          className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4 shadow-panel"
         >
           <h2 className="text-sm font-semibold">New CSV import</h2>
           <label className="flex flex-col gap-1 text-sm">
@@ -343,7 +343,7 @@ export default function ImportExportListPage() {
         <form
           onSubmit={createExport}
           aria-label="New CSV export"
-          className="flex flex-col gap-2 rounded-md border p-4"
+          className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4 shadow-panel"
         >
           <h2 className="text-sm font-semibold">New CSV export</h2>
           <label className="flex flex-col gap-1 text-sm">
@@ -369,7 +369,7 @@ export default function ImportExportListPage() {
         </form>
       </div>
 
-      <div className="flex flex-col gap-2 rounded-md border p-4">
+      <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4 shadow-panel">
         <h2 className="text-sm font-semibold">Dry-run validation preview (CSV)</h2>
         <TextArea
           value={csvText}

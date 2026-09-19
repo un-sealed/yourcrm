@@ -182,7 +182,7 @@ export default function AiAssistantPage() {
     <div className="flex h-full flex-col gap-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">AI Assistant</h1>
+          <h1 className="text-xl font-semibold">AI Assistant</h1>
           <p className="text-sm text-muted-foreground">
             Ask about your CRM data. Answers only ever cover records you are allowed to see, and the
             assistant cannot change anything yet.
@@ -251,7 +251,7 @@ export default function AiAssistantPage() {
         </aside>
 
         <section
-          className={`${sidebarOpen ? "hidden" : "flex"} min-h-0 flex-1 flex-col rounded-lg border md:flex`}
+          className={`${sidebarOpen ? "hidden" : "flex"} min-h-0 flex-1 flex-col rounded-xl border border-border bg-card shadow-panel md:flex`}
           aria-label="Conversation"
         >
           <div className="flex-1 overflow-y-auto p-4">
