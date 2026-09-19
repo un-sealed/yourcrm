@@ -100,3 +100,33 @@ NULL`, so a scope has one live rule and can be re-created after
   actor types, decisions and modes validated against the schema
   allowlists before they reach SQL.
 - `migrations/0350_ai_governance.sql` — the DDL mirror of the schema file.
+## Settings, teams & compliance tables (spec 40 + 41)
+
+- `src/schema/settings.ts` — `workspaceTeams` (`teams`),
+  `workspaceTeamMembers` (`team_members`), `workspaceInvites` and
+  `dataRequests`. Exports are prefixed because one generated barrel covers
+  every module's schema. `membership_id` and `subject_id` are plain indexed
+  uuids: `memberships` and `people` belong to other modules.
+- The **workspace profile is the `workspaces` row**, not a side table:
+  `0320_settings.sql` added `date_format`, `logo_url`, `brand_color` and
+  `support_email` next to the existing name/timezone/currency, so a
+  workspace has exactly one source of truth.
+- `workspace_invites.token_hash` is the SHA-256 hex of a 32-byte CSPRNG
+  token (`@yourcrm/auth` `tokens.ts` — the session primitive). The raw
+  token is never stored; resending rotates the hash and the expiry.
+- `data_requests` (GDPR/DPDP) stores ids and status only. An export is
+  assembled live from the owning module when it is downloaded, so
+  answering a privacy request never duplicates the subject's data at rest.
+- `src/repositories/settings-repository.ts`,`teams-repository.ts`,
+  `compliance-repository.ts` — imported by subpath. They share a keyset
+  cursor over `(created_at, id)` (`encodeSettingsCursor`), which the
+  foundation's id-only cursor does not provide.
+
+### `audit_events` is append-only — enforced
+
+`createAuditLogReader()` has exactly two methods, `list` and `findById`.
+There is no update, delete or restore on the audit path anywhere, and
+`0320_settings.sql` installs `audit_events_reject_mutation()` plus two
+triggers that make UPDATE, DELETE and TRUNCATE on `audit_events` raise.
+`writeAudit()` only inserts, so nothing legitimate is affected; a future
+"fix up an audit row" patch fails loudly instead of succeeding quietly.
