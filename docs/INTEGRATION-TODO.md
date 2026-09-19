@@ -51,6 +51,7 @@ barrel, then a few `emit` calls in the owning service.
 | Knowledge Base | `article.created` `.updated` `.published` | 22 §9 |
 | Support | `ticket.created` `.assigned` `.escalated` `.resolved` | 21 §9 |
 | Security / Teams | `security.setting_changed` `user.invited` `role.updated` `team.member_added` | 40, 41 |
+| AI governance | `ai.action_rejected` `ai.action_applied` `ai.policy_changed` `ai.kill_switch_enabled` | 38 §9 |
 
 Note: spec 21 §10 automation hooks are blocked on the Support group — the
 automation engine listens on the event bus, so no events means no triggers.
@@ -145,6 +146,19 @@ checking at exactly the seam where service and repository types could drift.
 - **Invite acceptance is unimplemented by design.** `checkInviteUsable()` and
   `findInviteByTokenHash()` are the seam; creating the user + membership from
   an invite token belongs to the auth module.
+
+## 6c. Decisions only you can make
+
+**Which objects may AI write?** `AI_ACTION_APPLIERS` in
+`apps/api/src/routes/modules/ai-governance.ts` currently binds **only
+`person`**, as a worked example. `company`, `deal`, `lead`, `task` are
+deliberately unbound — binding an object type *is* the decision to let AI
+modify it. Unbound types are refused with a 400, so the safe default holds
+until you choose. One line each.
+
+**`send_external` has no bound transport.** It is a governed action, but
+approving one currently fails with a clear 400 rather than silently sending.
+Wire it to the email service only when you want AI to be able to send.
 
 ## 7. Partial modules (counted as done, but aren't)
 
