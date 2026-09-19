@@ -158,3 +158,53 @@ emits nothing.
 
 Out of P0 scope and deliberately not stubbed: SSO (SAML/OIDC), SCIM, MFA,
 IP allowlists, encryption-key rotation.
+
+## AI agents (`src/ai-agents`, spec 36)
+
+A named, scoped, triggerable LLM loop: stored instructions, an
+allowlisted subset of the ASSISTANT's read tools, a trigger (manual or a
+domain event), an owner whose permissions it inherits, and hard budgets.
+
+```ts
+import { createAiAgentService, createAiAgentToolRegistry } from "@yourcrm/crm/src/ai-agents"
+```
+
+**Reads happen. Writes never do.** The tool registry holds the
+assistant's read tools verbatim plus one `propose` tool,
+`crm_propose_change`, which calls
+`AiActionProposalPort.requestAction` and returns — an `ai_action_request`
+for a human, and nothing else. `AiAgentServiceDeps` contains no applier,
+no domain service and no repository beyond this module's own two tables,
+so there is no code path from an agent to a mutation.
+`createAiAgentToolRegistry` refuses any tool whose access is not `read`
+or `propose`, and the assistant's `createAiToolRegistry` refuses a
+non-read tool before that.
+
+**Bounded loops**: `maxSteps`, `maxToolCalls` and `maxTotalTokens` live on
+the definition, are CHECK-constrained to their ceilings in migration
+0400, and are clamped again with `clampAiAgentBudget` at execution — a
+hand-edited row cannot buy an unbounded loop. A run that hits a ceiling
+terminates with status `exhausted`, which is deliberately not `failed`.
+
+**Permission inheritance**: a run executes as the agent's OWNER, whose
+role is re-resolved LIVE (`AiAgentActorRoleResolver`) at execution time;
+a removed owner refuses the run. Every tool then calls
+`requirePermission()` — the read tools themselves, and `requestAction`
+for a proposal, which re-checks the live role against the target action.
+A viewer-owned agent sees what a viewer sees and cannot propose at all.
+
+**Idempotency**: a run is keyed on the triggering event id
+(UNIQUE `(agent_id, trigger_event_id)`), so a redelivery is a no-op and
+an agent never spends its tokens twice. `executeRun` is additionally a
+no-op on a run that already reached a terminal status.
+
+**Cost**: every run records steps, tool calls, proposals, prompt and
+completion tokens, latency and `cost_micros`, attributable to a model and
+a run id; every tool call writes an audit row with `source: "ai"` and
+`correlationId = agentrun:<runId>`, which is also how `dispatch` derives
+cascade depth.
+
+`subscribeAiAgentDispatcher(bus, service)` connects agents to the event
+bus — call it from the app bootstrap, never from a route factory.
+Execution runs on the worker through `AiAgentRunQueuePort`; domain code
+never imports BullMQ.

@@ -376,3 +376,60 @@ an anonymous caller that reaches nothing.
   once their branches are merged.
 - **[i] Agent worktrees** — `./docs/agent-prompts/launch.sh down` removes
   merged ones; branches are preserved either way.
+
+---
+
+## 9. AI agents (spec 36) — reported, not done
+
+**[!] Wire the module at merge.** `bun run scripts/gen-barrels.ts &&
+bun run scripts/gen-routes.ts` to pick up `packages/crm/src/ai-agents`,
+`packages/database/src/schema/ai-agents.ts` and
+`apps/api/src/routes/modules/ai-agents.ts` (base path `/ai/agents`).
+
+**[!] `apps/api` does not declare `bullmq`.** `defaultQueue()` in
+`routes/modules/ai-agents.ts` logs `ai_agent_run_enqueued` instead of
+enqueuing, so agent runs are recorded but never executed. Same gap as
+automation and sequences. The four-line replacement is documented at the
+call site; the job name, payload and deterministic job id live in
+`apps/worker/src/jobs/ai-agent.ts`.
+
+**[!] `registerAiAgentRunner(...)` is unbound.** `apps/worker/src/index.ts`
+must bind it to the agent service's `executeRun`, or `ai.agent.run` jobs
+dead-letter with `AI_AGENT_RUNNER_NOT_BOUND` (loudly, by design).
+
+**[!] `subscribeAiAgentRuns()` is never called.** One line in
+`apps/api/src/index.ts` at boot, next to the automation dispatcher, or
+event-triggered agents never wake up. Manual runs work either way.
+
+**[~] Missing event constants.** Spec 36 §9 names `agent.published` and
+`agent.run_started`; `@yourcrm/events` has neither (only
+`AiEvents.AgentCompleted`). Per the rules this is reported, not added — the
+module emits `AgentCompleted` and `ToolCalled`, and enable/disable plus run
+start are fully covered by audit rows meanwhile.
+
+**[~] One shared-file edit.** `apps/api/src/routes/modules/ai-governance.ts`
+gained a single trailing line exporting its existing composition root as
+`createDefaultAiGovernanceService`, so the agents module proposes through
+THE governance service rather than wiring a second one. Nothing else in
+that file changed. `apps/worker/src/worker.ts` gained the usual two lines
+registering a job handler.
+
+**[!] The default model breaks multi-step tool loops on this gateway.**
+`AI_DEFAULT_MODEL=deepseek-v4-flash` runs in thinking mode, and replaying
+its assistant turn back for a second step is rejected with
+`400 … "The reasoning_content in the thinking mode must be passed back to
+the API"`. This is a PROVIDER gap, not an agent one, and it hits the
+Ask-Your-CRM assistant's tool loop identically: neither
+`AiMessage`/`AiProviderMessage` nor `openai-compatible-ai-provider.ts`
+carries `reasoning_content`. Fix is one optional field on the assistant
+message plus pass-through in the provider, in `packages/crm/src/ai-assistant`
+(and the mirrored type in `packages/ai`). Verified live; a single-step agent
+run works end to end today. `gpt-5.6-sol` on the same gateway answers
+`402 Budget pool quota has been exhausted`.
+
+**[i] `packages/agents` stays a Phase-3 placeholder.** It declares only
+`@yourcrm/events`, so it cannot import `@yourcrm/crm`, `@yourcrm/ai` or
+`@yourcrm/permissions`, and agents may not edit `package.json`. The module
+therefore lives in `packages/crm/src/ai-agents` next to the assistant and
+the approval queue it is built from — the same call the AI-core agent made
+for the providers. Moving it later is mechanical.

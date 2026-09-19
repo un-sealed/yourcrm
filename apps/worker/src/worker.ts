@@ -6,6 +6,7 @@ import { AUTOMATION_RUN_JOB_NAME, runAutomationJob } from "./jobs/automation"
 import { CAMPAIGN_SEND_BATCH_JOB_NAME, runCampaignBatchJob } from "./jobs/campaigns"
 import { SEQUENCE_STEP_JOB_NAME, runSequenceStepJob } from "./jobs/sequences"
 import { WEBHOOK_DELIVERY_JOB_NAME, runWebhookDeliveryJob } from "./jobs/webhooks"
+import { AI_AGENT_RUN_JOB_NAME, runAiAgentJob } from "./jobs/ai-agent"
 
 /**
  * Job registration pattern: one named handler per job in `./jobs/*`,
@@ -18,6 +19,7 @@ export const JobHandlers = {
   [CAMPAIGN_SEND_BATCH_JOB_NAME]: runCampaignBatchJob,
   [SEQUENCE_STEP_JOB_NAME]: runSequenceStepJob,
   [WEBHOOK_DELIVERY_JOB_NAME]: runWebhookDeliveryJob,
+  [AI_AGENT_RUN_JOB_NAME]: runAiAgentJob,
 } as const
 
 export type JobName = keyof typeof JobHandlers

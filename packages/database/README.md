@@ -130,3 +130,30 @@ There is no update, delete or restore on the audit path anywhere, and
 triggers that make UPDATE, DELETE and TRUNCATE on `audit_events` raise.
 `writeAudit()` only inserts, so nothing legitimate is affected; a future
 "fix up an audit row" patch fails loudly instead of succeeding quietly.
+
+## AI agent tables (spec 36)
+
+- `src/schema/ai-agents.ts` — `ai_agents` (instructions, model, the
+  allowlisted tool names, trigger, owner and the per-run budgets) and
+  `ai_agent_runs` (one execution: trigger, steps, tool calls, proposals,
+  tokens, latency, `cost_micros`, outcome and a `step_log` of tool names,
+  outcomes, durations and proposal ids).
+- There is no agent-action table on purpose: an agent never changes a
+  record, so a proposed change is an `ai_action_requests` row owned by the
+  approval queue (0350), and `step_log` carries the request ids.
+- The database facts that carry the module's guarantees:
+  - `ai_agent_runs_event_idx (agent_id, trigger_event_id)` UNIQUE — one
+    run per triggering event, forever. `createRun` inserts
+    `ON CONFLICT DO NOTHING` and reports `created`, which is what makes a
+    redelivered event cost nothing.
+  - `max_steps` / `max_tool_calls` / `max_total_tokens` are CHECK-bounded
+    to the domain layer's ceilings (12 / 24 / 200000), so writing straight
+    to the table cannot widen a budget.
+  - `depth` + `parent_run_id` carry cascade-loop protection, as on
+    `workflow_runs`.
+- `src/repositories/ai-agents-repository.ts` — definition CRUD, the
+  idempotent run insert, run history and the accounting update, with
+  statuses, trigger types and tool names validated against the schema
+  allowlists before they reach SQL. Nothing in it writes another module's
+  table.
+- `migrations/0400_ai_agents.sql` — the DDL mirror of the schema file.
