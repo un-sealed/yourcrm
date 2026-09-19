@@ -58,8 +58,14 @@ export const CrmEvents = {
   DealLost: "deal.lost",
   ActivityCreated: "activity.created",
   ActivityCompleted: "activity.completed",
+  ActivityDeleted: "activity.deleted",
   TaskCreated: "task.created",
   TaskCompleted: "task.completed",
+  TaskDeleted: "task.deleted",
+  PersonDeleted: "person.deleted",
+  CompanyDeleted: "company.deleted",
+  LeadDeleted: "lead.deleted",
+  DealDeleted: "deal.deleted",
 } as const
 
 export const CommunicationEvents = {
@@ -83,4 +89,34 @@ export const AiEvents = {
   ActionApproved: "ai.action_approved",
   ActionReverted: "ai.action_reverted",
   AgentCompleted: "agent.completed",
+} as const
+
+export const PipelineEvents = {
+  PipelineCreated: "pipeline.created",
+  PipelineUpdated: "pipeline.updated",
+  PipelineStageReordered: "pipeline.stage_reordered",
+} as const
+
+export const ProductEvents = {
+  ProductCreated: "product.created",
+  ProductUpdated: "product.updated",
+  ProductArchived: "product.archived",
+  ProductDeleted: "product.deleted",
+} as const
+
+export const FormEvents = {
+  FormCreated: "form.created",
+  FormUpdated: "form.updated",
+  FormSubmitted: "form.submitted",
+} as const
+
+export const FileEvents = {
+  FileUploaded: "file.uploaded",
+  FileDeleted: "file.deleted",
+} as const
+
+export const TransferEvents = {
+  ImportStarted: "import.started",
+  ImportCompleted: "import.completed",
+  ExportCompleted: "export.completed",
 } as const
