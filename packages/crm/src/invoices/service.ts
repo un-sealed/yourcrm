@@ -2,7 +2,7 @@ import { createEvent, getEventBus } from "@yourcrm/events"
 // `InvoiceEvents` is defined in the events envelope but not re-exported from
 // the package barrel (centrally owned); import the canonical constant from
 // its defining module rather than repeating the strings locally.
-import { InvoiceEvents } from "@yourcrm/events/src/envelope"
+import { InvoiceEvents } from "@yourcrm/events"
 import { requirePermission } from "@yourcrm/permissions"
 import {
   createInvoiceSchema,
@@ -59,7 +59,7 @@ export type InvoiceOverdueInput = Record<string, unknown> & { status?: unknown; 
  * stored as a mutable field. `total = Σ quantity × unitAmountCents`,
  * `paid = Σ payment amountCents`, `balanceDue = total − paid`.
  */
-export function computeTotals(
+export function computeInvoiceTotals(
   lineItems: Pick<InvoiceLineItemRecord, "quantity" | "unitAmountCents">[],
   payments: Pick<PaymentRecord, "amountCents">[],
   invoice: InvoiceOverdueInput,
@@ -112,7 +112,7 @@ export function createInvoicesService(deps: InvoicesServiceDeps) {
     lineItems: InvoiceLineItemRecord[]
     payments: PaymentRecord[]
   }): InvoiceWithDetails {
-    return { ...detail, totals: computeTotals(detail.lineItems, detail.payments, detail.invoice) }
+    return { ...detail, totals: computeInvoiceTotals(detail.lineItems, detail.payments, detail.invoice) }
   }
 
   async function list(ctx: InvoicesServiceContext, rawQuery: unknown): Promise<InvoiceListResult> {
@@ -142,7 +142,7 @@ export function createInvoicesService(deps: InvoicesServiceDeps) {
     const detail = await deps.store.findWithDetails(ctx.workspaceId, invoice.id)
     const full: InvoiceWithDetails = detail
       ? withTotals(detail)
-      : { invoice, lineItems: [], payments: [], totals: computeTotals([], [], invoice) }
+      : { invoice, lineItems: [], payments: [], totals: computeInvoiceTotals([], [], invoice) }
     await events.emit(
       createEvent({
         event: InvoiceEvents.Created,

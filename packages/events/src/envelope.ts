@@ -157,3 +157,8 @@ export const DashboardEvents = {
   Created: "dashboard.created",
   Updated: "dashboard.updated",
 } as const
+
+export const SearchEvents = {
+  Executed: "search.executed",
+  CommandExecuted: "command.executed",
+} as const

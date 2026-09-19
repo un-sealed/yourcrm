@@ -3,7 +3,7 @@ import { createEvent, getEventBus } from "@yourcrm/events"
 // the package barrel (centrally owned); import the canonical constant from
 // its defining module rather than repeating the strings locally (same
 // pattern as the invoices module — see packages/crm/src/invoices/service.ts).
-import { CalendarEvents } from "@yourcrm/events/src/envelope"
+import { CalendarEvents } from "@yourcrm/events"
 import { requirePermission } from "@yourcrm/permissions"
 import {
   createCalendarEventSchema,

@@ -11,7 +11,7 @@ import {
 } from "@yourcrm/testing"
 import type { BaseRecord } from "@yourcrm/validation"
 import {
-  computeTotals,
+  computeQuoteTotals,
   createQuotesService,
   InvalidQuoteTransitionError,
   type QuoteLineItemRecord,
@@ -151,9 +151,9 @@ async function seed(service: QuotesService, ctx: ServiceContext, number = "Q-001
   return service.create(ctx, { number })
 }
 
-describe("quotes/computeTotals", () => {
+describe("quotes/computeQuoteTotals", () => {
   test("subtotal is the sum of quantity × unitAmountCents", () => {
-    const totals = computeTotals(
+    const totals = computeQuoteTotals(
       [
         { quantity: 2, unitAmountCents: 1000 },
         { quantity: 1, unitAmountCents: 500 },
@@ -170,7 +170,7 @@ describe("quotes/computeTotals", () => {
 
   test("percent discount then tax on the post-discount amount", () => {
     // subtotal 2500, 10% discount (250), taxable 2250, 8% tax (180) -> 2430
-    const totals = computeTotals([{ quantity: 1, unitAmountCents: 2500 }], {
+    const totals = computeQuoteTotals([{ quantity: 1, unitAmountCents: 2500 }], {
       discountType: "percent",
       discountValue: 1000,
       taxRateBps: 800,
@@ -184,7 +184,7 @@ describe("quotes/computeTotals", () => {
   })
 
   test("fixed discount is capped at the subtotal (never negative)", () => {
-    const totals = computeTotals([{ quantity: 1, unitAmountCents: 500 }], {
+    const totals = computeQuoteTotals([{ quantity: 1, unitAmountCents: 500 }], {
       discountType: "fixed",
       discountValue: 9999,
       taxRateBps: 0,

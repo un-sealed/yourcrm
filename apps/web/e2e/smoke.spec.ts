@@ -13,7 +13,14 @@ test("dashboard renders via app shell", async ({ page }) => {
   await expect(page.getByText("API status")).toBeVisible()
 })
 
-test("future module routes render placeholders", async ({ page }) => {
+test("implemented module routes render their own page", async ({ page }) => {
+  // People is implemented, so it must NOT show the placeholder any more.
   await page.goto("/app/people")
+  await expect(page.getByText("Coming soon")).toHaveCount(0)
+})
+
+test("unimplemented module routes still render the placeholder", async ({ page }) => {
+  // whatsapp has no module yet and still falls through to app/[section].
+  await page.goto("/app/whatsapp")
   await expect(page.getByText("Coming soon")).toBeVisible()
 })

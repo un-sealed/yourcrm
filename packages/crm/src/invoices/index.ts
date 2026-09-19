@@ -1,4 +1,4 @@
-export { computeTotals, createInvoicesService, InvoiceNotFoundError, isOverdue } from "./service"
+export { computeInvoiceTotals, createInvoicesService, InvoiceNotFoundError, isOverdue } from "./service"
 export type { InvoicesService } from "./service"
 export {
   createInvoiceSchema,

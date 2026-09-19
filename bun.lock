@@ -23,6 +23,7 @@
         "@yourcrm/database": "workspace:*",
         "@yourcrm/events": "workspace:*",
         "@yourcrm/permissions": "workspace:*",
+        "@yourcrm/search": "workspace:*",
         "@yourcrm/storage": "workspace:*",
         "@yourcrm/validation": "workspace:*",
         "drizzle-orm": "^0.44.2",

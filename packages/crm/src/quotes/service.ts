@@ -2,7 +2,7 @@ import { createEvent, getEventBus } from "@yourcrm/events"
 // `QuoteEvents` is defined in the events envelope but not re-exported from
 // the package barrel (centrally owned); import the canonical constant from
 // its defining module rather than repeating the strings locally.
-import { QuoteEvents } from "@yourcrm/events/src/envelope"
+import { QuoteEvents } from "@yourcrm/events"
 import { requirePermission } from "@yourcrm/permissions"
 import { createQuoteSchema, quoteQuerySchema, updateQuoteSchema } from "./schemas"
 import type {
@@ -65,7 +65,7 @@ export type QuoteMoneyInput = Record<string, unknown> & {
  * subtotal (`percent` is basis points of it, `fixed` is a capped cents
  * amount); tax applies to the post-discount (taxable) amount.
  */
-export function computeTotals(
+export function computeQuoteTotals(
   lineItems: Pick<QuoteLineItemRecord, "quantity" | "unitAmountCents">[],
   quote: QuoteMoneyInput,
 ): QuoteTotals {
@@ -125,7 +125,7 @@ export function createQuotesService(deps: QuotesServiceDeps) {
     quote: QuoteRecord
     lineItems: QuoteLineItemRecord[]
   }): QuoteWithDetails {
-    return { ...detail, totals: computeTotals(detail.lineItems, detail.quote) }
+    return { ...detail, totals: computeQuoteTotals(detail.lineItems, detail.quote) }
   }
 
   async function list(ctx: QuotesServiceContext, rawQuery: unknown): Promise<QuoteListResult> {
@@ -154,7 +154,7 @@ export function createQuotesService(deps: QuotesServiceDeps) {
     const detail = await deps.store.findWithLineItems(ctx.workspaceId, quote.id)
     const full: QuoteWithDetails = detail
       ? withTotals(detail)
-      : { quote, lineItems: [], totals: computeTotals([], quote) }
+      : { quote, lineItems: [], totals: computeQuoteTotals([], quote) }
     await events.emit(
       createEvent({
         event: QuoteEvents.Created,

@@ -11,7 +11,7 @@ import {
 } from "@yourcrm/testing"
 import type { BaseRecord } from "@yourcrm/validation"
 import {
-  computeTotals,
+  computeInvoiceTotals,
   createInvoicesService,
   type InvoiceLineItemRecord,
   type InvoiceRecord,
@@ -330,7 +330,7 @@ describe("invoices/service", () => {
     })
     expect(created.totals.overdue).toBe(true)
     expect(created.invoice.status).toBe("draft")
-    const totals = computeTotals([], [], { status: "paid", dueDate: "2000-01-01" })
+    const totals = computeInvoiceTotals([], [], { status: "paid", dueDate: "2000-01-01" })
     expect(totals.overdue).toBe(false)
   })
 

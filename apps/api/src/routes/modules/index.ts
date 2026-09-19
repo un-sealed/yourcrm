@@ -8,10 +8,20 @@ import {
   openApiPaths as activitiesOpenApiPaths,
 } from "./activities"
 import {
+  basePath as calendarBasePath,
+  createRoutes as createCalendarRoutes,
+  openApiPaths as calendarOpenApiPaths,
+} from "./calendar"
+import {
   basePath as companiesBasePath,
   createRoutes as createCompaniesRoutes,
   openApiPaths as companiesOpenApiPaths,
 } from "./companies"
+import {
+  basePath as dashboardsBasePath,
+  createRoutes as createDashboardsRoutes,
+  openApiPaths as dashboardsOpenApiPaths,
+} from "./dashboards"
 import {
   basePath as dealsBasePath,
   createRoutes as createDealsRoutes,
@@ -58,6 +68,21 @@ import {
   openApiPaths as productsOpenApiPaths,
 } from "./products"
 import {
+  basePath as quotesBasePath,
+  createRoutes as createQuotesRoutes,
+  openApiPaths as quotesOpenApiPaths,
+} from "./quotes"
+import {
+  basePath as reportsBasePath,
+  createRoutes as createReportsRoutes,
+  openApiPaths as reportsOpenApiPaths,
+} from "./reports"
+import {
+  basePath as searchBasePath,
+  createRoutes as createSearchRoutes,
+  openApiPaths as searchOpenApiPaths,
+} from "./search"
+import {
   basePath as systemBasePath,
   createRoutes as createSystemRoutes,
   openApiPaths as systemOpenApiPaths,
@@ -76,7 +101,9 @@ import {
  */
 export const moduleRoutes: ModuleDefinition[] = [
   { path: activitiesBasePath, createRoutes: createActivitiesRoutes, openApiPaths: activitiesOpenApiPaths },
+  { path: calendarBasePath, createRoutes: createCalendarRoutes, openApiPaths: calendarOpenApiPaths },
   { path: companiesBasePath, createRoutes: createCompaniesRoutes, openApiPaths: companiesOpenApiPaths },
+  { path: dashboardsBasePath, createRoutes: createDashboardsRoutes, openApiPaths: dashboardsOpenApiPaths },
   { path: dealsBasePath, createRoutes: createDealsRoutes, openApiPaths: dealsOpenApiPaths },
   { path: filesBasePath, createRoutes: createFilesRoutes, openApiPaths: filesOpenApiPaths },
   { path: formsBasePath, createRoutes: createFormsRoutes, openApiPaths: formsOpenApiPaths },
@@ -86,6 +113,9 @@ export const moduleRoutes: ModuleDefinition[] = [
   { path: peopleBasePath, createRoutes: createPeopleRoutes, openApiPaths: peopleOpenApiPaths },
   { path: pipelinesBasePath, createRoutes: createPipelinesRoutes, openApiPaths: pipelinesOpenApiPaths },
   { path: productsBasePath, createRoutes: createProductsRoutes, openApiPaths: productsOpenApiPaths },
+  { path: quotesBasePath, createRoutes: createQuotesRoutes, openApiPaths: quotesOpenApiPaths },
+  { path: reportsBasePath, createRoutes: createReportsRoutes, openApiPaths: reportsOpenApiPaths },
+  { path: searchBasePath, createRoutes: createSearchRoutes, openApiPaths: searchOpenApiPaths },
   { path: systemBasePath, createRoutes: createSystemRoutes, openApiPaths: systemOpenApiPaths },
   { path: tasksBasePath, createRoutes: createTasksRoutes, openApiPaths: tasksOpenApiPaths },
 ]

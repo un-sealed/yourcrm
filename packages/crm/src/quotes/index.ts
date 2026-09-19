@@ -1,5 +1,5 @@
 export {
-  computeTotals,
+  computeQuoteTotals,
   createQuotesService,
   InvalidQuoteTransitionError,
   QuoteNotFoundError,

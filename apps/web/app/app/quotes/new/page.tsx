@@ -22,7 +22,7 @@ const DISCOUNT_OPTIONS = [
  * Create-quote form: required fields first, line items inline, discount/tax
  * and terms collapsible. Totals are never entered here — they are always
  * computed server-side from the line items plus discount/tax on save (see
- * `computeTotals` in the quotes domain service), and the detail page shows
+ * `computeQuoteTotals` in the quotes domain service), and the detail page shows
  * the server's numbers, never a client guess.
  */
 export default function NewQuotePage() {

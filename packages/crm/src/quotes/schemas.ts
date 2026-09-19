@@ -8,7 +8,7 @@ import { paginationQuerySchema } from "@yourcrm/validation"
  * basis points (`*Bps`) so totals stay exact.
  *
  * Deliberately absent: subtotal/discount/tax/grandTotal. Totals are always
- * server-computed (see `computeTotals` in `./service`) from line items plus
+ * server-computed (see `computeQuoteTotals` in `./service`) from line items plus
  * `discountType`/`discountValue`/`taxRateBps` — these schemas have no field
  * for a client-supplied total, so `.parse()` strips one out if sent.
  */

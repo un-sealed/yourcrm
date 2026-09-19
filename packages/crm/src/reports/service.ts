@@ -1,5 +1,5 @@
 import { createEvent, getEventBus } from "@yourcrm/events"
-import { ReportEvents } from "@yourcrm/events/src/envelope"
+import { ReportEvents } from "@yourcrm/events"
 import { requirePermission } from "@yourcrm/permissions"
 import {
   assertReportVisible,

@@ -25,7 +25,7 @@ import { baseColumns, ownerColumn, workspaceColumn } from "./base"
  * Money is stored as integer minor units (`*_cents`) so totals stay exact.
  * Discount/tax rates are stored as integer basis points (`*_bps`, 10000 =
  * 100%) for the same reason. `subtotal`/`discount`/`tax`/`grandTotal` are
- * DERIVED (never stored as mutable fields) — see `computeTotals` in the
+ * DERIVED (never stored as mutable fields) — see `computeQuoteTotals` in the
  * domain service, which recomputes them server-side on every read and
  * ignores any total the client supplies.
  */

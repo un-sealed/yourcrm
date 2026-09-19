@@ -24,7 +24,7 @@ import { baseColumns, ownerColumn, workspaceColumn } from "./base"
  *
  * Money is stored as integer minor units (`*_cents`) so totals stay exact.
  * `balance_due` is DERIVED (line-item total minus recorded payments) and is
- * never stored as a mutable field — see `computeTotals` in the domain
+ * never stored as a mutable field — see `computeInvoiceTotals` in the domain
  * service. Overdue is derived from `due_date` the same way.
  */
 
