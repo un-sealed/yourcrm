@@ -50,16 +50,20 @@ export const CrmEvents = {
   CompanyCreated: "company.created",
   CompanyUpdated: "company.updated",
   LeadCreated: "lead.created",
+  LeadUpdated: "lead.updated",
   LeadQualified: "lead.qualified",
   LeadConverted: "lead.converted",
   DealCreated: "deal.created",
+  DealUpdated: "deal.updated",
   DealStageChanged: "deal.stage_changed",
   DealWon: "deal.won",
   DealLost: "deal.lost",
   ActivityCreated: "activity.created",
+  ActivityUpdated: "activity.updated",
   ActivityCompleted: "activity.completed",
   ActivityDeleted: "activity.deleted",
   TaskCreated: "task.created",
+  TaskUpdated: "task.updated",
   TaskCompleted: "task.completed",
   TaskDeleted: "task.deleted",
   PersonDeleted: "person.deleted",
@@ -119,4 +123,37 @@ export const TransferEvents = {
   ImportStarted: "import.started",
   ImportCompleted: "import.completed",
   ExportCompleted: "export.completed",
+} as const
+
+export const QuoteEvents = {
+  Created: "quote.created",
+  Updated: "quote.updated",
+  Sent: "quote.sent",
+  Accepted: "quote.accepted",
+  Rejected: "quote.rejected",
+} as const
+
+export const InvoiceEvents = {
+  Created: "invoice.created",
+  Updated: "invoice.updated",
+  Sent: "invoice.sent",
+  Paid: "invoice.paid",
+  PaymentRecorded: "payment.recorded",
+} as const
+
+export const CalendarEvents = {
+  EventCreated: "calendar.event_created",
+  EventUpdated: "calendar.event_updated",
+  EventDeleted: "calendar.event_deleted",
+} as const
+
+export const ReportEvents = {
+  Created: "report.created",
+  Updated: "report.updated",
+  Run: "report.run",
+} as const
+
+export const DashboardEvents = {
+  Created: "dashboard.created",
+  Updated: "dashboard.updated",
 } as const
