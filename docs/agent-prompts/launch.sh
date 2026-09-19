@@ -63,8 +63,8 @@ strip_ansi() { sed -r 's/\x1B\[[0-9;]*[mGKHF]//g'; }
 modules() {
   if [[ -n "$ONLY" ]]; then
     tr ',' '\n' <<<"$ONLY"
-  elif [[ "$WAVE" == "1" ]]; then
-    find "$KIT/wave1" -name '*.md' ! -name '_shared.md' -printf '%f\n' | sed 's/\.md$//' | sort
+  elif [[ "$WAVE" != "2" ]]; then
+    find "$KIT/wave$WAVE" -name '*.md' ! -name '_shared.md' -printf '%f\n' | sed 's/\.md$//' | sort
   else
     bun run "$KIT/render.ts" --slugs
   fi
@@ -74,8 +74,10 @@ modules() {
 # Wave 2 prompts are rendered from the template + registry.
 make_prompt() {
   local slug="$1" out="$2"
-  if [[ "$WAVE" == "1" ]]; then
-    { cat "$KIT/wave1/$slug.md"; echo; cat "$KIT/wave1/_shared.md"; } >"$out"
+  if [[ "$WAVE" != "2" ]]; then
+    local shared="$KIT/wave$WAVE/_shared.md"
+    [[ -f "$shared" ]] || shared="$KIT/wave1/_shared.md"
+    { cat "$KIT/wave$WAVE/$slug.md"; echo; cat "$shared"; } >"$out"
   else
     bun run "$KIT/render.ts" "$slug" >"$out"
   fi
@@ -145,6 +147,14 @@ up() {
     else
       log "worktree: $wt (branch agent/$slug)"
       git -C "$REPO" worktree add -q "$wt" -b "agent/$slug"
+    fi
+    # Give each agent its own database — see README "infrastructure is shared".
+    local dbname="yourcrm_${slug//-/_}"
+    if [[ -f "$REPO/.env" ]]; then
+      sed -E "s#^(DATABASE_URL=.*)/[a-zA-Z0-9_]+(\"?)\$#\\1/$dbname\\2#" "$REPO/.env" >"$wt/.env"
+      docker compose -f "$REPO/docker-compose.yml" exec -T postgres \
+        psql -U yourcrm -d postgres -c "CREATE DATABASE $dbname" >/dev/null 2>&1 \
+        && log "created database $dbname" || true
     fi
     if [[ ! -d "$wt/node_modules" ]]; then
       log "installing deps in $slug"
