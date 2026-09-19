@@ -43,6 +43,12 @@ export const SEARCH_OBJECT_TYPES = [
   "form",
   "product",
   "invoice",
+  // Added by the Knowledge Base agent (spec 22): published kb_articles are
+  // pushed here on publish and pulled back out on unpublish/archive/delete
+  // (packages/crm/src/knowledge-base/service.ts). Kept in step by hand with
+  // `packages/crm/src/search/types.ts` and `apps/web/app/app/search/types.ts`
+  // — see the comment on that file's copy of this list.
+  "article",
 ] as const
 
 export type SearchObjectType = (typeof SEARCH_OBJECT_TYPES)[number]

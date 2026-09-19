@@ -201,7 +201,7 @@ function toSearchValues(input: UpsertSearchDocumentInput, actorId?: string) {
 }
 
 function searchObjectTypeList(): string {
-  return "person, company, lead, deal, activity, task, file, form, product, invoice"
+  return "person, company, lead, deal, activity, task, file, form, product, invoice, article"
 }
 
 export function createSearchRepository() {
