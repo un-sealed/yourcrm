@@ -66,3 +66,46 @@ the events they emit name their parent run. `dispatch` derives
 
 `subscribeWorkflowDispatcher(bus, service)` connects the engine to the
 event bus — call it from the app bootstrap, never from a route factory.
+
+## Settings, security & compliance (`src/settings`, specs 40 + 41)
+
+```ts
+import {
+  createWorkspaceSettingsService, // workspace profile, members, invitations
+  createWorkspaceTeamService, // teams + membership edges
+  createComplianceService, // audit-log viewer + GDPR/DPDP requests
+} from "@yourcrm/crm/src/settings"
+```
+
+**Privilege escalation is the risk in this module**, so every mutation
+passes two gates: `requirePermission({ action: "admin" })` (the shared
+role-rank policy), then a relational guard from `settings/roles.ts` that
+`@yourcrm/permissions` cannot express because it depends on the target row
+and the rest of the workspace:
+
+1. nobody changes their own role (self-promotion),
+2. only an owner may re-rank, deactivate or reactivate an owner,
+3. nobody grants a role above their own, and the **last owner** can be
+   neither demoted nor deactivated.
+
+Both kinds of denial surface as the same `PermissionDeniedError` / 403.
+
+**Invites are tokens, not passwords.** `invite()` takes a
+`WorkspaceInviteTokenPort` (the API binds it to `generateSessionToken` /
+`hashSessionToken`; this package does not depend on `@yourcrm/auth`),
+returns the raw token exactly once and stores only its hash with an
+expiry. `checkInviteUsable()` is the pure expiry/revocation rule the
+signup flow will call.
+
+**The audit port is read-only by type.** `WorkspaceAuditLogPort` declares
+`list` and `findById` and nothing else, so no service, route or refactor
+can modify an audit row; the table also rejects mutation in Postgres.
+
+**No domain events in P0 (blocker, not an omission):** `@yourcrm/events`
+has no settings/team/security group (`security.setting_changed`,
+`user.invited`, `role.updated`, `team.member_added`), and this module may
+neither add one nor use string literals — so it audits every mutation and
+emits nothing.
+
+Out of P0 scope and deliberately not stubbed: SSO (SAML/OIDC), SCIM, MFA,
+IP allowlists, encryption-key rotation.
