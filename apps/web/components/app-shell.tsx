@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { Button } from "@yourcrm/ui"
 import { cn } from "@yourcrm/ui"
 import { ALL_ROUTES, NAV_SECTIONS } from "./nav-sections"
+import { SessionFooter } from "./session-footer"
 import { useUiStore, useWorkspaceStore } from "@/lib/store"
 
 /** Left navigation shell: workspace switcher, nav, user menu, palette entry. */
@@ -49,7 +50,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
           <div className="border-t p-3 text-xs text-muted-foreground">
-            <p>Dev User · dev@yourcrm.local</p>
+            <SessionFooter />
           </div>
         </aside>
       )}

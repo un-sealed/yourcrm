@@ -44,7 +44,7 @@ export default function SignupPage() {
         )
         return
       }
-      router.push("/")
+      router.push("/app/dashboard")
       router.refresh()
     } catch {
       setError("Could not reach the API. Is it running?")
