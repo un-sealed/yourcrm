@@ -50,6 +50,7 @@ barrel, then a few `emit` calls in the owning service.
 | Search | `search.executed` `command.executed` | 28 §9 |
 | Knowledge Base | `article.created` `.updated` `.published` | 22 §9 |
 | Support | `ticket.created` `.assigned` `.escalated` `.resolved` | 21 §9 |
+| Security / Teams | `security.setting_changed` `user.invited` `role.updated` `team.member_added` | 40, 41 |
 
 Note: spec 21 §10 automation hooks are blocked on the Support group — the
 automation engine listens on the event bus, so no events means no triggers.
@@ -131,6 +132,19 @@ checking at exactly the seam where service and repository types could drift.
   right.
 
 ---
+
+## 6b. Review these cross-module changes at merge
+
+- **`packages/database/src/schema/core.ts`** — the settings agent added
+  `date_format`, `logo_url`, `brand_color`, `support_email` to `workspaces`
+  (additive; the profile stays one row rather than a parallel settings table).
+- **`audit_events` is now append-only at the database level** —
+  `0320_settings.sql` installs a trigger rejecting UPDATE/DELETE/TRUNCATE.
+  Verified nothing in the codebase mutates audit rows. If a future migration
+  ever needs to, the rollback is documented in that file's header.
+- **Invite acceptance is unimplemented by design.** `checkInviteUsable()` and
+  `findInviteByTokenHash()` are the seam; creating the user + membership from
+  an invite token belongs to the auth module.
 
 ## 7. Partial modules (counted as done, but aren't)
 
