@@ -52,6 +52,7 @@ barrel, then a few `emit` calls in the owning service.
 | Support | `ticket.created` `.assigned` `.escalated` `.resolved` | 21 §9 |
 | Security / Teams | `security.setting_changed` `user.invited` `role.updated` `team.member_added` | 40, 41 |
 | AI governance | `ai.action_rejected` `ai.action_applied` `ai.policy_changed` `ai.kill_switch_enabled` | 38 §9 |
+| Portal | `portal.login` `portal.quote_accepted` `portal.ticket_created` | 45 §9 |
 
 Note: spec 21 §10 automation hooks are blocked on the Support group — the
 automation engine listens on the event bus, so no events means no triggers.
@@ -159,6 +160,19 @@ until you choose. One line each.
 **`send_external` has no bound transport.** It is a governed action, but
 approving one currently fails with a clear 400 rather than silently sending.
 Wire it to the email service only when you want AI to be able to send.
+
+## 6d. Customer portal — two gaps by design
+
+- **No admin surface to grant portal access.** Deliberately kept out of the
+  portal router so it stays 100% customer-facing. `createPortalRepository()`
+  exposes `createIdentity`, `createGrant`, `revokeIdentity` — a member-side UI
+  needs building before anyone can actually be invited to the portal.
+- **Magic-link delivery is a dev console log.** In production it logs a
+  warning and sends nothing. Wire it to the email transport once a connection
+  is configured, or portal login cannot be completed by a real customer.
+- **Ticket reader unwired** — `deps.tickets` is `undefined` until `support`
+  merges; tickets read as empty, never unscoped. The port takes the scope as
+  its first argument and the implementation must apply it in SQL.
 
 ## 7. Partial modules (counted as done, but aren't)
 
