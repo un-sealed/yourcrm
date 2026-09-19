@@ -1,4 +1,5 @@
 import { getClientEnv } from "./env"
+import { isOffline } from "./offline"
 
 export class ApiError extends Error {
   constructor(
@@ -20,6 +21,8 @@ export type ApiOptions = {
   signal?: AbortSignal
 }
 
+const SAFE_METHODS = new Set(["GET", "HEAD"])
+
 /**
  * Typed API client pattern. All web <-> API traffic goes through here:
  * - base URL from validated env
@@ -27,8 +30,31 @@ export type ApiOptions = {
  * - `{ error }` responses throw as ApiError
  * - `apiFetch` unwraps `{ data }` envelopes; `apiFetchRaw` returns bare
  *   JSON for unenveloped endpoints (e.g. `/health`).
+ *
+ * Offline writes: a mutating call (anything but GET/HEAD) made while
+ * `navigator.onLine` is false is refused immediately, before it ever
+ * reaches `fetch`, as `ApiError("OFFLINE", ...)`. This module chose
+ * "refuse with a clear message" over "queue and replay" — queuing a CRM
+ * write for later means either re-validating it against server state that
+ * may have changed (a conflict-resolution engine the spec explicitly
+ * scopes to P2 "offline/native", not this P0 pass) or risking a silent
+ * stale write, which is the one thing this module is required not to do.
+ * Refusing is the safe default: the caller sees the same ApiError path it
+ * already handles for any other failed write (toast / inline error), the
+ * user knows immediately nothing was saved, and no state can silently
+ * diverge from the server. GET/HEAD reads are unaffected — they still hit
+ * the network and fail with a normal network error if unreachable, same
+ * as before this change.
  */
 export async function apiFetchRaw<T>(path: string, opts: ApiOptions = {}): Promise<T> {
+  const method = opts.method ?? "GET"
+  if (!SAFE_METHODS.has(method) && isOffline()) {
+    throw new ApiError(
+      "OFFLINE",
+      "You're offline, so this change wasn't saved. Reconnect and try again.",
+      0,
+    )
+  }
   const { NEXT_PUBLIC_API_URL } = getClientEnv()
   const requestId = crypto.randomUUID()
   const res = await fetch(`${NEXT_PUBLIC_API_URL}${path}`, {

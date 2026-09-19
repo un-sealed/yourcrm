@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test"
+import { afterEach, describe, expect, test } from "bun:test"
 import { ApiError, apiFetch, apiFetchRaw } from "./api-client"
 
 function jsonResponse(body: unknown, status = 200, headers: Record<string, string> = {}) {
@@ -6,6 +6,11 @@ function jsonResponse(body: unknown, status = 200, headers: Record<string, strin
     status,
     headers: { "content-type": "application/json", ...headers },
   })
+}
+
+/** `navigator.onLine` is a getter in Bun's built-in `navigator`; stub it via defineProperty. */
+function setOnline(value: boolean): void {
+  Object.defineProperty(navigator, "onLine", { value, configurable: true })
 }
 
 describe("web/api-client", () => {
@@ -60,5 +65,57 @@ describe("web/api-client", () => {
     } finally {
       globalThis.fetch = orig
     }
+  })
+
+  describe("offline writes", () => {
+    afterEach(() => setOnline(true))
+
+    test("refuses a mutating call while offline, without touching the network", async () => {
+      setOnline(false)
+      let called = false
+      const orig = globalThis.fetch
+      globalThis.fetch = (async () => {
+        called = true
+        return jsonResponse({ data: {} })
+      }) as unknown as typeof fetch
+      try {
+        const err = await apiFetch("/api/v1/people", { method: "POST", body: {} }).catch((e) => e)
+        expect(err).toBeInstanceOf(ApiError)
+        expect((err as ApiError).code).toBe("OFFLINE")
+        expect(called).toBe(false)
+      } finally {
+        globalThis.fetch = orig
+      }
+    })
+
+    test("still lets GET reads reach the network while offline", async () => {
+      setOnline(false)
+      let called = false
+      const orig = globalThis.fetch
+      globalThis.fetch = (async () => {
+        called = true
+        return jsonResponse({ data: [] })
+      }) as unknown as typeof fetch
+      try {
+        await expect(apiFetch("/api/v1/people")).resolves.toEqual([])
+        expect(called).toBe(true)
+      } finally {
+        globalThis.fetch = orig
+      }
+    })
+
+    test("mutating calls proceed normally once back online", async () => {
+      setOnline(true)
+      const orig = globalThis.fetch
+      globalThis.fetch = (async () =>
+        jsonResponse({ data: { id: "p1" } })) as unknown as typeof fetch
+      try {
+        await expect(apiFetch("/api/v1/people", { method: "POST", body: {} })).resolves.toEqual({
+          id: "p1",
+        })
+      } finally {
+        globalThis.fetch = orig
+      }
+    })
   })
 })

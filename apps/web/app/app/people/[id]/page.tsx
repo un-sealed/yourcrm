@@ -21,6 +21,7 @@ import {
 } from "@yourcrm/ui"
 import { ApiError, apiFetch } from "@/lib/api-client"
 import { displayName, type PersonDetail } from "../types"
+import { toWhatsAppLink } from "../whatsapp-link"
 
 const STATUS_OPTIONS = [
   { value: "active", label: "Active" },
@@ -117,6 +118,7 @@ export default function PersonDetailPage() {
 
   const primaryEmail = person.emails.find((e) => e.isPrimary) ?? person.emails[0]
   const primaryPhone = person.phones.find((p) => p.isPrimary) ?? person.phones[0]
+  const whatsappLink = primaryPhone ? toWhatsAppLink(primaryPhone.phone) : null
 
   return (
     <div className="flex flex-col gap-6">
@@ -144,6 +146,13 @@ export default function PersonDetailPage() {
               <a href={`mailto:${primaryEmail.email}`}>
                 <Button variant="outline" size="sm">
                   Email
+                </Button>
+              </a>
+            ) : null}
+            {whatsappLink ? (
+              <a href={whatsappLink} target="_blank" rel="noreferrer">
+                <Button variant="outline" size="sm">
+                  WhatsApp
                 </Button>
               </a>
             ) : null}
