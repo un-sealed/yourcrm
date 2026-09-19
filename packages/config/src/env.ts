@@ -55,7 +55,27 @@ export const envSchema = z.object({
 
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
+
+  /**
+   * AI provider (spec 34-ai-assistant). One OpenAI-compatible endpoint
+   * covers OpenAI, OpenRouter, gateways and local Ollama/vLLM, so there is
+   * one base URL and one key rather than a variable per vendor.
+   *
+   * `AI_USER_AGENT` is NOT cosmetic: some gateways authorise on the client
+   * identity as well as the bearer token and answer `unauthorized client
+   * detected` when it is missing or unrecognised. It is sent on every
+   * request (see `createOpenAiCompatibleAiProvider`).
+   *
+   * `AI_API_KEY` and `AI_DEFAULT_MODEL` stay optional so the rest of the
+   * app boots without an AI provider; the assistant endpoints answer 503
+   * `AI_PROVIDER_NOT_CONFIGURED` until both are set. The key is never
+   * logged, echoed in an error, or written to an audit row.
+   */
+  AI_BASE_URL: z.string().url().default("https://api.openai.com/v1"),
+  AI_API_KEY: z.string().optional(),
   AI_DEFAULT_MODEL: z.string().optional(),
+  AI_USER_AGENT: z.string().min(1).default("yourcrm/0.1"),
+  AI_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().max(600_000).default(60_000),
 
   MCP_PORT: z.coerce.number().int().positive().default(4100),
   MCP_API_TOKEN: z.string().optional(),
