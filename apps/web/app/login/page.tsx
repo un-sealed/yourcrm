@@ -1,30 +1,88 @@
 "use client"
 
-/** Login foundation (real session flow lands with spec 04-authentication). */
+/**
+ * Login page (Wave-1 auth, spec 04: email+password only).
+ * Posts the `@yourcrm/auth` login contract to the API; the API sets the
+ * httpOnly `yourcrm_session` cookie. Until the platform-seams agent mounts
+ * `POST /api/v1/auth/login`, submissions surface the API error state below.
+ */
 
+import { useState, type FormEvent } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@yourcrm/ui"
+import { getClientEnv } from "@/lib/env"
 
-/** Login foundation (real session flow lands with spec 04-authentication). */
 export default function LoginPage() {
+  const router = useRouter()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [pending, setPending] = useState(false)
+
+  async function onSubmit(e: FormEvent): Promise<void> {
+    e.preventDefault()
+    setError(null)
+    setPending(true)
+    try {
+      const { NEXT_PUBLIC_API_URL } = getClientEnv()
+      const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/v1/auth/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: email.trim(), password }),
+      })
+      if (!res.ok) {
+        // Login failures are generic server-side: mirror that here.
+        setError("Invalid email or password.")
+        return
+      }
+      router.push("/")
+      router.refresh()
+    } catch {
+      setError("Could not reach the API. Is it running?")
+    } finally {
+      setPending(false)
+    }
+  }
+
   return (
     <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center p-8">
       <h1 className="text-2xl font-semibold">Log in to YourCRM</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Email + password and OAuth arrive in Phase 1.
-      </p>
-      <form className="mt-6 flex flex-col gap-3" onSubmit={(e) => e.preventDefault()}>
-        <input
-          className="rounded-md border bg-transparent px-3 py-2 text-sm"
-          placeholder="Email"
-          type="email"
-        />
-        <input
-          className="rounded-md border bg-transparent px-3 py-2 text-sm"
-          placeholder="Password"
-          type="password"
-        />
-        <Button type="submit">Log in</Button>
+      <p className="mt-1 text-sm text-muted-foreground">Welcome back to your workspace.</p>
+      <form className="mt-6 flex flex-col gap-3" onSubmit={onSubmit}>
+        <label className="flex flex-col gap-1 text-sm">
+          Email
+          <input
+            className="rounded-md border bg-transparent px-3 py-2 text-sm"
+            placeholder="you@company.com"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          Password
+          <input
+            className="rounded-md border bg-transparent px-3 py-2 text-sm"
+            placeholder="Password"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </label>
+        {error ? (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        ) : null}
+        <Button type="submit" disabled={pending}>
+          {pending ? "Logging in…" : "Log in"}
+        </Button>
       </form>
       <p className="mt-4 text-sm text-muted-foreground">
         No account?{" "}

@@ -14,6 +14,12 @@ const DEMO_IDS = {
   sales: "33333333-3333-4333-8333-333333333333",
 }
 
+/**
+ * Demo password for both seed users (Wave-1 auth, dev only — never use in
+ * production). Stored as argon2id hashes in `credentials` (migration 0002).
+ */
+const DEMO_PASSWORD = "Password123!"
+
 async function main(): Promise<void> {
   const url = process.env.DATABASE_URL
   if (!url) throw new Error("DATABASE_URL is required to seed")
@@ -22,6 +28,7 @@ async function main(): Promise<void> {
     if (process.env.SEED_RESET === "1") {
       console.log("Removing demo seed data...")
       await sql`DELETE FROM memberships WHERE workspace_id = ${DEMO_IDS.workspace}::uuid`
+      await sql`DELETE FROM credentials WHERE user_id IN (${DEMO_IDS.admin}::uuid, ${DEMO_IDS.sales}::uuid)`
       await sql`DELETE FROM users WHERE id IN (${DEMO_IDS.admin}::uuid, ${DEMO_IDS.sales}::uuid)`
       await sql`DELETE FROM workspaces WHERE id = ${DEMO_IDS.workspace}::uuid`
     }
@@ -43,10 +50,27 @@ async function main(): Promise<void> {
         (${DEMO_IDS.workspace}::uuid, ${DEMO_IDS.sales}::uuid, 'member')
       ON CONFLICT (workspace_id, user_id) DO NOTHING`
 
+    // Wave-1 auth: seed users must be able to log in. Credentials live in
+    // the separate `credentials` table so re-seeding never wipes passwords
+    // set through the app for other accounts — but demo rows are demo data
+    // and are safe to refresh here.
+    const [adminHash, salesHash] = await Promise.all([
+      Bun.password.hash(DEMO_PASSWORD, { algorithm: "argon2id" }),
+      Bun.password.hash(DEMO_PASSWORD, { algorithm: "argon2id" }),
+    ])
+    await sql`
+      INSERT INTO credentials (user_id, password_hash)
+      VALUES
+        (${DEMO_IDS.admin}::uuid, ${adminHash}),
+        (${DEMO_IDS.sales}::uuid, ${salesHash})
+      ON CONFLICT (user_id) DO UPDATE
+        SET password_hash = EXCLUDED.password_hash, updated_at = NOW()`
+
     console.log("Seed complete: demo workspace + 2 users (marked demo data).")
     console.log("  workspace: Demo Workspace (demo)")
     console.log("  admin:     admin@yourcrm.local")
     console.log("  sales:     sales@yourcrm.local")
+    console.log(`  password:  ${DEMO_PASSWORD} (dev only)`)
   } finally {
     await sql.end({ timeout: 5 })
   }
