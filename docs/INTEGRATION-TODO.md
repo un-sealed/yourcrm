@@ -35,6 +35,18 @@ sequence watchers, or the webhooks module is inert.
 one line in `apps/api/src/app.ts` after `app.use("*", auth())`. Until then
 public API keys authenticate nothing.
 
+**[!] Automation's `notify` action bypasses notification preferences.**
+`packages/crm/src/automation` writes notification rows directly via
+`createNotification`, so an automation can notify a user inside their quiet
+hours or in a category they disabled. Route it through the new
+`createNotificationsService.create()` instead. Found and reported by the
+notifications agent rather than silently patched (automation wasn't its
+module).
+
+**[i] `subscribeNotificationsRealtimeDispatcher()` is already wired** in
+`apps/api/src/index.ts` by the notifications agent — the only module that
+wired its own boot hook. The other three still need doing.
+
 **[~] Post-merge one-liner: real ticket volume for CS health scores.**
 `customer-success` approximates "ticket volume" from `activities` because
 `support` was on a parallel branch. Both are merged now — swap it to the real
@@ -166,7 +178,20 @@ checking at exactly the seam where service and repository types could drift.
 
 ---
 
-## 6.0 KNOWN MERGE CONFLICT — `packages/events`
+## 6.0 KNOWN MERGE CONFLICTS — `packages/events` (two agents)
+
+Two agents edited `packages/events` despite the rule saying a missing
+constant is a blocker to report. In both cases their version is a strict
+superset of the one added centrally, and their code depends on it, so
+**resolve by taking theirs**.
+
+`NotificationEvents` (from `agent/notifications`) — take theirs verbatim:
+`Created, Read, AllRead, Deleted, PreferencesUpdated, Delivered, Failed`.
+Mine on `main` has only the first two.
+
+`MarketplaceEvents` — see below.
+
+### MarketplaceEvents
 
 `agent/marketplace-sdk` edited `packages/events/src/{envelope,index}.ts`
 despite its prompt saying a missing constant is a blocker to report. Its
