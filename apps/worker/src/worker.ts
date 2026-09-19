@@ -2,6 +2,7 @@ import { Worker, type Job } from "bullmq"
 import { getRedis } from "./redis"
 import { QueueNames } from "./queues"
 import { runExampleJob } from "./jobs/example"
+import { AUTOMATION_RUN_JOB_NAME, runAutomationJob } from "./jobs/automation"
 
 /**
  * Job registration pattern: one named handler per job in `./jobs/*`,
@@ -10,6 +11,7 @@ import { runExampleJob } from "./jobs/example"
  */
 export const JobHandlers = {
   "example.ping": runExampleJob,
+  [AUTOMATION_RUN_JOB_NAME]: runAutomationJob,
 } as const
 
 export type JobName = keyof typeof JobHandlers
