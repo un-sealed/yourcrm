@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { Button } from "@yourcrm/ui"
 import { cn } from "@yourcrm/ui"
 import { ALL_ROUTES, NAV_SECTIONS } from "./nav-sections"
+import { NotificationBell } from "./notification-bell"
 import { SessionFooter } from "./session-footer"
 import { useUiStore, useWorkspaceStore } from "@/lib/store"
 
@@ -67,7 +68,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           >
             Search or command… <kbd className="ml-auto rounded border px-1 text-[11px]">⌘K</kbd>
           </button>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <NotificationBell />
             <Button size="sm">+ Create</Button>
           </div>
         </header>

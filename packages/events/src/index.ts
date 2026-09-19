@@ -9,6 +9,7 @@ export {
   eventEnvelopeSchema,
   FileEvents,
   FormEvents,
+  NotificationEvents,
   PipelineEvents,
   ProductEvents,
   CalendarEvents,
