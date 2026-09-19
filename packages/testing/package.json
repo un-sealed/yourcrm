@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "@yourcrm/auth": "workspace:*",
+    "@yourcrm/crm": "workspace:*",
+    "@yourcrm/events": "workspace:*",
+    "@yourcrm/permissions": "workspace:*",
+    "@yourcrm/validation": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "eslint": "^9.34.0",
+    "typescript": "^5.9.2"
+  },
+  "main": "./src/index.ts",
+  "name": "@yourcrm/testing",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "lint": "eslint src --max-warnings=0",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "type": "module",
+  "types": "./src/index.ts",
+  "version": "0.1.0"
+}
