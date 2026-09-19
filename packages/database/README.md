@@ -70,3 +70,33 @@ Modules do not write this table directly: they call the indexing service in
   able to write it, and each write goes through the owning module's own
   repository so no business rule is duplicated.
 - `migrations/0190_automation.sql` — the DDL mirror of the schema file.
+
+## AI governance tables (approval-queue contract)
+
+- `src/schema/ai-governance.ts` — `ai_policies` (per object + action:
+  `require_approval` | `auto_apply` | `forbidden`), `ai_action_requests`
+  (one proposed mutation: actor, model, run id, polymorphic target,
+  before/after diff, rationale, lifecycle) and `ai_action_approvals` (the
+  one human decision a request may receive).
+- The target of an action is the POLYMORPHIC pair
+  (`object_type`, `record_id`) with no foreign key: this module governs
+  objects whose modules may not exist yet, and applying always goes
+  through the owning module's domain service.
+- Two database facts carry the module's guarantees, not hygiene:
+  - `ai_action_approvals_request_idx (request_id)` UNIQUE — one decision
+    per request, forever. `recordDecision` inserts
+    `ON CONFLICT DO NOTHING` and reports `created`.
+  - `ai_action_requests.apply_claimed_at` / `revert_claimed_at` —
+    claim-before-apply. `claimRequestApply` is a conditional UPDATE on
+    `status = 'approved' AND apply_claimed_at IS NULL`, so exactly one
+    caller can ever apply a request; everybody else gets
+    `claimed: false`.
+- `ai_policies_scope_idx` is UNIQUE per workspace `WHERE deleted_at IS
+NULL`, so a scope has one live rule and can be re-created after
+  deletion. The column default is `require_approval` — the deny-by-human
+  default lives in the DDL too.
+- `src/repositories/ai-governance-repository.ts` — policy CRUD, request
+  CRUD, the two claims and the one decision, with statuses, actions,
+  actor types, decisions and modes validated against the schema
+  allowlists before they reach SQL.
+- `migrations/0350_ai_governance.sql` — the DDL mirror of the schema file.

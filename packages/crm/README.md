@@ -66,3 +66,53 @@ the events they emit name their parent run. `dispatch` derives
 
 `subscribeWorkflowDispatcher(bus, service)` connects the engine to the
 event bus — call it from the app bootstrap, never from a route factory.
+
+## AI governance & approval queue (`src/ai-governance`, spec 38)
+
+The gate every AI write passes through. An AI agent does not mutate
+records — it proposes an action, a human decides, and only then does the
+governance service call the owning module's domain service.
+
+```ts
+import { createAiGovernanceService } from "@yourcrm/crm/src/ai-governance"
+```
+
+The port an AI agent calls is `AiActionProposalPort.requestAction(ctx,
+input)`: object type, record id, `create | update | delete |
+send_external`, a before/after diff, a mandatory rationale, and the model
+and run id that produced it. There is no `apply` on that port.
+
+Beyond `store` / `audit` / `events` it takes two more ports:
+
+- `applier: AiActionApplierPort` — the DOMAIN SERVICES that actually make
+  the change (and restore `before` on revert). Governance never writes
+  another module's tables; the integrator wires the concrete services in
+  `apps/api/src/routes/modules/ai-governance.ts`.
+- `resolveActorRole: AiActorRoleResolver` — the LIVE workspace role, for
+  the requesting actor _and_ the approver. Same shape and same answer as
+  automation's resolver.
+
+**No privilege escalation**: an approved action runs with the
+intersection of the requester's and the approver's permissions — the
+shared `requirePermission()` is called once per actor against the same
+target action, so neither can lend the other rights. Both roles are
+re-read at decision time.
+
+**No self-approval**: the requesting actor cannot approve its own
+request, and any non-`user` actor is refused outright — an AI can never
+approve. Rejecting your own proposal is allowed; refusal is the safe
+direction.
+
+**Exactly-once apply**: a UNIQUE index on `ai_action_approvals
+(request_id)` means one decision per request, and applying starts with a
+conditional claim (`status = 'approved' AND apply_claimed_at IS NULL`).
+The loser of the race returns `applied: false` without reaching the
+applier. A failed apply keeps its claim.
+
+**Policies**: `resolveAiPolicy` is a pure function — most specific scope
+wins, and an unmatched `(object, action)` pair means `require_approval`.
+Auto-apply is opt-in per scope, by an admin.
+
+**Attribution**: request, approval, rejection, apply and revert each write
+an audit row with `source: "ai"` carrying model, run id, actor and
+correlation id (`airq:<requestId>` when the proposer supplied none).
