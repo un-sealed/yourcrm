@@ -47,6 +47,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { href: "/app/custom-objects", label: "Custom Objects" },
       { href: "/app/ai", label: "AI Assistant" },
       { href: "/app/settings", label: "Settings" },
+      { href: "/app/settings/onboarding", label: "Onboarding" },
     ],
   },
 ]
