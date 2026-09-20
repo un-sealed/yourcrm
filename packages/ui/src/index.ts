@@ -106,3 +106,11 @@ export type { TabItem, TabsProps } from "./tabs"
 
 export { StoreToaster, Toaster, toast, toastStore } from "./toast"
 export type { NewToast, StoreToasterProps, ToastData, ToastTone, ToasterProps } from "./toast"
+
+export { WidgetPicker, WidgetPickerList, WidgetPickerRow } from "./widget-picker"
+export type {
+  WidgetPickerItem,
+  WidgetPickerListProps,
+  WidgetPickerProps,
+  WidgetPickerRowProps,
+} from "./widget-picker"

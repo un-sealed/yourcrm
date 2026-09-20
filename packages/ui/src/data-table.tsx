@@ -239,15 +239,15 @@ export function DataTable<T>({
         leaves the column picker permanently open and floating over the page.
       */}
       <details className="group relative self-end text-xs">
-        <summary className="cursor-pointer rounded-md px-2 py-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <summary className="cursor-pointer rounded-md px-2 py-1 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-strong)]">
           Columns
         </summary>
-        <div className="absolute right-0 z-50 mt-1 hidden max-h-72 w-48 flex-col gap-1 overflow-y-auto rounded-xl border border-border bg-popover p-2 shadow-pop group-open:flex">
+        <div className="absolute right-0 z-50 mt-1 hidden max-h-72 w-48 flex-col gap-1 overflow-y-auto rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface-1)] p-2 shadow-[var(--shadow-pop)] group-open:flex">
           {columns.map((column) => {
             const position = order.includes(column.id) ? order.indexOf(column.id) : order.length
             return (
               <div key={column.id} className="flex items-center gap-1">
-                <label className="flex flex-1 cursor-pointer items-center gap-1.5 whitespace-nowrap text-foreground">
+                <label className="flex flex-1 cursor-pointer items-center gap-1.5 whitespace-nowrap text-[var(--text-primary)]">
                   <Checkbox
                     checked={!hidden.includes(column.id)}
                     aria-label={`Show column ${column.id}`}
@@ -260,7 +260,7 @@ export function DataTable<T>({
                   aria-label={`Move column ${column.id} left`}
                   disabled={position <= 0}
                   onClick={() => setOrder(moveColumnId(order, column.id, -1))}
-                  className="rounded px-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                  className="rounded px-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] disabled:opacity-30"
                 >
                   ◀
                 </button>
@@ -269,7 +269,7 @@ export function DataTable<T>({
                   aria-label={`Move column ${column.id} right`}
                   disabled={position < 0 || position >= order.length - 1}
                   onClick={() => setOrder(moveColumnId(order, column.id, 1))}
-                  className="rounded px-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                  className="rounded px-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] disabled:opacity-30"
                 >
                   ▶
                 </button>
@@ -287,10 +287,14 @@ export function DataTable<T>({
         into an unreadable stack. Every existing `<DataTable>` usage is
         unaffected — no props changed, this is pure CSS.
       */}
-      <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-panel">
-        <table ref={tableRef} aria-label={ariaLabel} className="w-full min-w-max text-sm">
+      <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]">
+        <table
+          ref={tableRef}
+          aria-label={ariaLabel}
+          className="w-full min-w-max text-sm tabular-nums"
+        >
           <thead>
-            <tr className="border-b border-border bg-muted/50">
+            <tr className="bg-[var(--surface-2)]">
               {selectable ? (
                 <th scope="col" className="w-10 px-2 py-2">
                   <Checkbox
@@ -316,7 +320,7 @@ export function DataTable<T>({
                         : undefined
                     }
                     className={cn(
-                      "whitespace-nowrap px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground",
+                      "whitespace-nowrap px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]",
                       ALIGN_CLASSES[column.align ?? "left"],
                     )}
                   >
@@ -325,7 +329,7 @@ export function DataTable<T>({
                         type="button"
                         aria-label={`Sort by ${column.id}`}
                         onClick={() => setSort(nextSortDirection(sort, column.id))}
-                        className="inline-flex items-center gap-1 rounded hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="inline-flex items-center gap-1 rounded hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-strong)]"
                       >
                         {column.header}
                         <span aria-hidden="true">
@@ -343,7 +347,10 @@ export function DataTable<T>({
           <tbody>
             {loading
               ? Array.from({ length: skeletonRowCount }, (_, index) => (
-                  <tr key={`skeleton-${index}`} className="border-b border-border last:border-0">
+                  <tr
+                    key={`skeleton-${index}`}
+                    className="h-[52px] border-b border-[var(--border)] last:border-0"
+                  >
                     {selectable ? (
                       <td className="px-2 py-2">
                         <Skeleton className="h-4 w-4" />
@@ -365,8 +372,8 @@ export function DataTable<T>({
                       data-row-id={rowId}
                       aria-selected={selectable ? checked : undefined}
                       className={cn(
-                        "border-b border-border last:border-0 hover:bg-muted/40",
-                        checked && "bg-muted/60",
+                        "h-[52px] border-b border-[var(--border)] last:border-0 hover:bg-[var(--surface-2)]",
+                        checked && "bg-[var(--brand-soft)] dark:bg-[var(--brand-soft-dark)]",
                       )}
                     >
                       {selectable ? (
@@ -409,7 +416,7 @@ export function DataTable<T>({
                               }
                             }}
                             className={cn(
-                              "whitespace-nowrap px-3 py-2.5 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                              "whitespace-nowrap px-3 py-2.5 text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-strong)]",
                               ALIGN_CLASSES[column.align ?? "left"],
                             )}
                           >
@@ -447,7 +454,7 @@ export function DataTable<T>({
 
       {pagination !== undefined ? (
         <nav aria-label="Table pagination" className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">{pagination.limit} per page</span>
+          <span className="text-[var(--text-muted)]">{pagination.limit} per page</span>
           <span className="flex items-center gap-1">
             {pagination.cursor !== null ? (
               <Button
