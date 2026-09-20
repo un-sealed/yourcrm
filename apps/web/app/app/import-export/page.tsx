@@ -393,7 +393,8 @@ export default function ImportExportListPage() {
               <ul className="list-disc pl-5">
                 {preview.errors.slice(0, 5).map((e, i) => (
                   <li key={`${e.row}-${e.column ?? "?"}-${i}`}>
-                    Row {e.row}{e.column ? ` (${e.column})` : ""}: {e.message}
+                    Row {e.row}
+                    {e.column ? ` (${e.column})` : ""}: {e.message}
                   </li>
                 ))}
               </ul>

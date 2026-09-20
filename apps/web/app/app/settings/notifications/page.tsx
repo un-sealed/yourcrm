@@ -156,7 +156,10 @@ export default function NotificationPreferencesPage() {
         </table>
       </section>
 
-      <section aria-label="Quiet hours" className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-panel">
+      <section
+        aria-label="Quiet hours"
+        className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-panel"
+      >
         <div className="flex items-center gap-2">
           <Checkbox
             id="quiet-hours-enabled"
