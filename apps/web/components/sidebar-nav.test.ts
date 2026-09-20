@@ -3,9 +3,6 @@ import {
   formatNavCount,
   isActiveRoute,
   navItemAriaLabel,
-  railSections,
-  resolvePanelSection,
-  sectionForPath,
   sectionHasActive,
 } from "./sidebar-nav"
 import { ALL_ROUTES, NAV_SECTIONS } from "./nav-sections"
@@ -55,69 +52,10 @@ describe("nav-sections", () => {
     expect(new Set(hrefs).size).toBe(hrefs.length)
   })
 
-  test("every section's rail icon is a real route, so no glyph falls back blank", () => {
-    const known = new Set(ALL_ROUTES.map((route) => route.href))
-    for (const section of NAV_SECTIONS) {
-      expect(known.has(section.icon)).toBe(true)
-    }
-  })
 })
 
-describe("sidebar/sectionForPath", () => {
-  test("finds the section holding the route", () => {
-    expect(sectionForPath("/app/deals")?.id).toBe("sales")
-    expect(sectionForPath("/app/whatsapp")?.id).toBe("inbox")
-    expect(sectionForPath("/app/settings/onboarding")?.id).toBe("settings")
-  })
 
-  test("every nav route resolves to a section", () => {
-    for (const route of ALL_ROUTES) {
-      expect(sectionForPath(route.href)).not.toBe(null)
-    }
-  })
 
-  test("a record detail page stays in its parent's section", () => {
-    // /app/people/abc-123 is not itself a nav entry, so it lights "People"
-    // and the panel keeps showing Customers instead of jumping away while
-    // the user drills into a record.
-    expect(sectionForPath("/app/people/abc-123")?.id).toBe("customers")
-    expect(sectionForPath("/app/deals/xyz/edit")?.id).toBe("sales")
-  })
-
-  test("a route outside the nav resolves to null rather than guessing", () => {
-    expect(sectionForPath("/app/nowhere")).toBe(null)
-  })
-})
-
-describe("sidebar/resolvePanelSection", () => {
-  test("the route wins when nothing was picked", () => {
-    expect(resolvePanelSection("/app/invoices", null).id).toBe("sales")
-  })
-
-  test("a rail pick wins, so a section can be browsed from elsewhere", () => {
-    expect(resolvePanelSection("/app/deals", "insights").id).toBe("insights")
-  })
-
-  test("an unknown pick falls back to the route instead of going blank", () => {
-    expect(resolvePanelSection("/app/deals", "not-a-section").id).toBe("sales")
-  })
-
-  test("a route outside the nav with no pick shows the first section", () => {
-    // Never blank: an unrecognised route still needs a usable panel.
-    const first = NAV_SECTIONS[0]
-    if (first === undefined) throw new Error("NAV_SECTIONS is empty")
-    expect(resolvePanelSection("/app/nowhere", null).id).toBe(first.id)
-  })
-})
-
-describe("sidebar/railSections", () => {
-  test("splits the rail into its main run and pinned tail", () => {
-    const { top, bottom } = railSections()
-    expect(top.length + bottom.length).toBe(NAV_SECTIONS.length)
-    expect(bottom.map((section) => section.id)).toEqual(["support", "settings"])
-    expect(top.every((section) => section.placement !== "bottom")).toBe(true)
-  })
-})
 
 describe("sidebar/sectionHasActive", () => {
   test("reports only the group holding the current route", () => {
@@ -153,5 +91,16 @@ describe("sidebar/navItemAriaLabel", () => {
   test("folds the count into the label so a badge is not colour-only", () => {
     expect(navItemAriaLabel({ href: "/app/inbox", label: "Inbox", count: 12 })).toBe("Inbox, 12")
     expect(navItemAriaLabel({ href: "/app/inbox", label: "Inbox" })).toBe("Inbox")
+  })
+
+  test("folds the group in too, for the rail where headings are not rendered", () => {
+    // Collapsed, "Search" alone does not say which part of the product it
+    // belongs to, because the visible heading is gone.
+    expect(navItemAriaLabel({ href: "/app/search", label: "Search" }, "Insights")).toBe(
+      "Search, Insights",
+    )
+    expect(navItemAriaLabel({ href: "/app/inbox", label: "Inbox", count: 3 }, "Inbox")).toBe(
+      "Inbox, Inbox, 3",
+    )
   })
 })

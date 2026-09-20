@@ -9,7 +9,7 @@ import { NotificationBell } from "./notification-bell"
 import { OfflineBanner } from "./offline-banner"
 import { MobileNav } from "./mobile-nav"
 import { NavIcon } from "./nav-icons"
-import { Sidebar, SidebarPanelToggle } from "./sidebar"
+import { Sidebar } from "./sidebar"
 import { ThemeToggle } from "./theme-toggle"
 import { useUiStore, useWorkspaceStore } from "@/lib/store"
 
@@ -70,11 +70,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       resolves against it and produces no overflow.
     */
     <div className="flex h-dvh overflow-hidden bg-page">
-      <Sidebar
-        panelOpen={sidebarOpen}
-        onTogglePanel={toggleSidebar}
-        workspaceLabel={label}
-      />
+      <Sidebar expanded={sidebarOpen} onToggle={toggleSidebar} workspaceLabel={label} />
 
       <div className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
         <OfflineBanner />
@@ -82,7 +78,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             is pinned by the layout itself. `shrink-0` keeps the 56px bar from
             being squeezed when the main column is short. */}
         <header className="z-30 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface-1 px-4">
-          {sidebarOpen ? null : <SidebarPanelToggle onToggle={toggleSidebar} />}
           <button
             type="button"
             onClick={() => setPaletteOpen(true)}

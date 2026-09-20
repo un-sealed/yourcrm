@@ -1,34 +1,22 @@
 export type NavItem = { href: string; label: string; count?: number }
 
-export type NavSection = {
-  id: string
-  label: string
-  /**
-   * Route whose glyph stands for the section on the rail. Reusing an item's
-   * icon keeps one icon language instead of inventing a second set that has
-   * to stay visually consistent with the first.
-   */
-  icon: string
-  /** Pinned below the rail's spacer rather than in the main run. */
-  placement?: "bottom"
-  items: NavItem[]
-}
+export type NavSection = { id: string; label: string; items: NavItem[] }
 
 /**
- * Navigation, grouped for a two-tier rail + panel sidebar.
+ * Navigation, as one column of short groups.
  *
- * The rail shows one icon per section; the panel shows only that section's
- * items. That sets the constraint these groups are built to: **a section has
- * to fit a panel without scrolling.** The previous three groups (General 8,
- * Tools 16, Support 4) could not — sixteen entries under "Tools" was a
- * catch-all that meant "everything that is not a record type", which is a
- * statement about the schema rather than about anyone's job.
+ * The split is by task rather than by schema. The original three groups
+ * (General 8, Tools 16, Support 4) put more than half the product under
+ * "Tools", a heading that means "everything that is not a record type" —
+ * a statement about the data model rather than about anyone's job, and a
+ * list nobody can scan.
  *
- * So the split is by task instead: who you sell to (Customers), what you
- * sell them (Sales), how you talk to them (Inbox), what runs by itself
- * (Automate), what it all adds up to (Insights). Largest section is five.
+ * These groups are sized to be read at a glance: who you sell to
+ * (Customers), what you sell them (Sales), how you talk to them (Inbox),
+ * what runs by itself (Automate), what it all adds up to (Insights). The
+ * largest is five.
  *
- * `count` is optional — when present the panel renders a right-aligned
+ * `count` is optional — when present the sidebar renders a right-aligned
  * badge. No route reports a live count yet, so no badge renders until a
  * data source is wired.
  */
@@ -36,7 +24,6 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     id: "workspace",
     label: "Workspace",
-    icon: "/app/dashboard",
     items: [
       { href: "/app/dashboard", label: "Dashboard" },
       { href: "/app/activities", label: "Activities" },
@@ -47,7 +34,6 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     id: "customers",
     label: "Customers",
-    icon: "/app/people",
     items: [
       { href: "/app/people", label: "People" },
       { href: "/app/companies", label: "Companies" },
@@ -57,7 +43,6 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     id: "sales",
     label: "Sales",
-    icon: "/app/deals",
     items: [
       { href: "/app/deals", label: "Deals" },
       { href: "/app/products", label: "Products" },
@@ -68,7 +53,6 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     id: "inbox",
     label: "Inbox",
-    icon: "/app/inbox",
     items: [
       { href: "/app/inbox", label: "Inbox" },
       { href: "/app/email", label: "Email" },
@@ -79,7 +63,6 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     id: "automate",
     label: "Automate",
-    icon: "/app/automation",
     items: [
       { href: "/app/forms", label: "Forms" },
       { href: "/app/automation", label: "Automation" },
@@ -91,7 +74,6 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     id: "insights",
     label: "Insights",
-    icon: "/app/reports",
     items: [
       { href: "/app/reports", label: "Reports" },
       { href: "/app/analytics", label: "Analytics" },
@@ -100,21 +82,11 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    id: "support",
-    label: "Support",
-    icon: "/app/tickets",
-    placement: "bottom",
+    id: "admin",
+    label: "Support & settings",
     items: [
       { href: "/app/tickets", label: "Tickets" },
       { href: "/app/knowledge-base", label: "Knowledge Base" },
-    ],
-  },
-  {
-    id: "settings",
-    label: "Settings",
-    icon: "/app/settings",
-    placement: "bottom",
-    items: [
       { href: "/app/settings", label: "Settings" },
       { href: "/app/settings/onboarding", label: "Onboarding" },
     ],
