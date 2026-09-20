@@ -2652,9 +2652,23 @@ async function seedPipelines(sql: Db): Promise<void> {
 async function seedDeals(sql: Db, clock: Clock): Promise<void> {
   for (const [i, d] of DEALS.entries()) {
     const index = i + 1
+    // A closed deal was last touched when it closed. `updated_at` defaults to
+    // now() and the overview buckets its won series by that column, so without
+    // this every curated won deal spikes on today. Open deals keep the default
+    // so the narrative accounts stay at the top of "recent deals".
+    const createdAt = clock.at(-d.createdDaysAgo)
+    const closedAt = clock.at(d.closeInDays, 16)
+    // An untouched open deal has updated_at == created_at; that is both
+    // truthful and keeps the value in the past whatever hour the seed runs.
+    const updatedAt =
+      d.stage === "won" || d.stage === "lost"
+        ? closedAt < createdAt
+          ? createdAt
+          : closedAt
+        : createdAt
     await sql`
-      INSERT INTO deals (id, workspace_id, owner_id, created_by, created_at, name, amount, currency, pipeline_id, stage_id, stage, probability, expected_close_date, person_id, company_id, close_reason, notes)
-      VALUES (${dealId(index)}::uuid, ${WORKSPACE}::uuid, ${userId(d.owner)}::uuid, ${userId(d.owner)}::uuid, ${clock.at(-d.createdDaysAgo)}, ${d.name}, ${d.amount.toFixed(2)}, 'USD', ${id("pipeline", d.pipeline)}::uuid, ${id("stage", d.stageIndex)}::uuid, ${d.stage}, ${stageProbability(d.stageIndex)}, ${clock.day(d.closeInDays)}, ${personId(d.person)}::uuid, ${companyId(dealCompany(index))}::uuid, ${d.closeReason}, ${d.notes})
+      INSERT INTO deals (id, workspace_id, owner_id, created_by, created_at, updated_at, name, amount, currency, pipeline_id, stage_id, stage, probability, expected_close_date, person_id, company_id, close_reason, notes)
+      VALUES (${dealId(index)}::uuid, ${WORKSPACE}::uuid, ${userId(d.owner)}::uuid, ${userId(d.owner)}::uuid, ${createdAt}, ${updatedAt}, ${d.name}, ${d.amount.toFixed(2)}, 'USD', ${id("pipeline", d.pipeline)}::uuid, ${id("stage", d.stageIndex)}::uuid, ${d.stage}, ${stageProbability(d.stageIndex)}, ${clock.day(d.closeInDays)}, ${personId(d.person)}::uuid, ${companyId(dealCompany(index))}::uuid, ${d.closeReason}, ${d.notes})
       ON CONFLICT (id) DO NOTHING`
   }
 }
