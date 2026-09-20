@@ -37,6 +37,30 @@ describe("ui/bar helpers", () => {
     expect(barPath(10, 150, 0, 10, 150)).toBe("")
   })
 
+  test("barPath emits coordinates an SVG parser reads back inside the bar", () => {
+    // Regression: the curve commands once ran their control point straight
+    // into their endpoint ("Q10.00,50.0014.00,50.00"), which a path parser
+    // reads as the single number 50.0014 followed by .00 — every bar drew as
+    // a diagonal wedge. Asserting the string "contains Q" did not catch it,
+    // so parse the numbers back out and bound them to the bar's own box.
+    const x = 10
+    const yTop = 50
+    const w = 20
+    const yb = 150
+    const d = barPath(x, yTop, w, 100, yb)
+
+    const numbers = d.match(/-?\d+(?:\.\d+)?/g) ?? []
+    expect(numbers.length).toBe(16) // 8 coordinate pairs: 2 corners + 2 curves
+    for (let i = 0; i < numbers.length; i += 2) {
+      const px = Number(numbers[i])
+      const py = Number(numbers[i + 1])
+      expect(px).toBeGreaterThanOrEqual(x)
+      expect(px).toBeLessThanOrEqual(x + w)
+      expect(py).toBeGreaterThanOrEqual(yTop)
+      expect(py).toBeLessThanOrEqual(yb)
+    }
+  })
+
   test("getBarHoverDatum resolves the hovered bar and rejects the rest", () => {
     expect(getBarHoverDatum(DATA, 0)).toEqual(DATA[0] ?? null)
     expect(getBarHoverDatum(DATA, DATA.length)).toBe(null)
@@ -60,7 +84,10 @@ describe("ui/BarChart", () => {
     expect(highlighted).toHaveLength(1)
     const markup = html(<BarChart data={DATA} />)
     expect(markup).toContain("var(--brand)")
-    expect(markup).toContain("var(--border-strong)")
+    // De-emphasised bars wear --mark-muted, which carries its own per-mode
+    // value. They previously borrowed --surface-2 in dark, which put a
+    // #1a1d22 bar on a #14161a card and made them invisible.
+    expect(markup).toContain("var(--mark-muted)")
     const bars = findAll(nodes, (entry) => entry.type === "path")
     expect(bars.length).toBeGreaterThan(0)
     for (const bar of bars) {

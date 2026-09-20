@@ -106,3 +106,45 @@ export function getHealth(signal?: AbortSignal): Promise<HealthResponse> {
   // /health is intentionally unenveloped (load-balancer friendly).
   return apiFetchRaw<HealthResponse>("/health", { signal })
 }
+
+/**
+ * Home dashboard aggregate (`GET /api/v1/overview`).
+ *
+ * One call rather than a fan-out of per-module list endpoints: the tiles,
+ * both charts, the gauge and the recent-deals table all read from the same
+ * snapshot, so they can never disagree with each other mid-render.
+ *
+ * `delta` is `number | null` on purpose — null means "no prior period to
+ * compare against", which the UI renders as no delta chip rather than as a
+ * flat 0%.
+ */
+export type OverviewKpi = {
+  value: number
+  delta: number | null
+  currency?: string
+}
+
+export type OverviewResponse = {
+  kpis: {
+    openPipelineValue: OverviewKpi
+    dealsWonThisMonth: OverviewKpi
+    newContactsThisMonth: OverviewKpi
+    activitiesThisWeek: OverviewKpi
+  }
+  trend: { date: string; created: number; won: number }[]
+  activityByDay: { date: string; label: string; count: number }[]
+  goal: { attained: number; wonValue: number; targetValue: number }
+  recentDeals: {
+    id: string
+    name: string
+    company: string | null
+    amount: number | null
+    currency: string
+    stage: string
+    updatedAt: string
+  }[]
+}
+
+export function getOverview(signal?: AbortSignal): Promise<OverviewResponse> {
+  return apiFetch<OverviewResponse>("/api/v1/overview", { signal })
+}

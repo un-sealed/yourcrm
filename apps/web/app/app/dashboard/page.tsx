@@ -1,45 +1,80 @@
 "use client"
 
-import type { ReactNode } from "react"
+import { useQuery } from "@tanstack/react-query"
 import Link from "next/link"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { Badge, Button, Skeleton, cn, buttonVariants } from "@yourcrm/ui"
-import { getHealth, type HealthResponse } from "@/lib/api-client"
+import {
+  AreaChart,
+  BarChart,
+  DataTable,
+  RadialGauge,
+  Skeleton,
+  StatTile,
+  buttonVariants,
+  cn,
+  type DataTableColumn,
+} from "@yourcrm/ui"
+import { getOverview, type OverviewResponse } from "@/lib/api-client"
 import { OnboardingChecklist } from "@/components/onboarding-checklist"
 
 /**
- * Workspace overview (spec 27 home).
+ * Workspace overview (spec 27 home), rebuilt against
+ * `docs/design/DASHBOARD-REDESIGN.md`.
  *
- * Presentation rules: the "midnight glass" showcase surface. Cards are the
- * only grouping primitive; brand personality comes from the shared theme
- * system only (glass surfaces via `bg-card`, the aurora background in
- * `globals.css`, gradient tiles via `bg-gradient-brand(-soft)`,
- * `text-gradient` headings and `shadow-glow` accents) — never ad-hoc
- * gradients invented per component. Content stays ordered
- * most-important-first (metrics, then actions, then workspace health) and
- * never presents a number it does not have: metrics that have no data
- * source yet read as a clean em dash with a plain caption rather than a
- * fabricated figure.
+ * The old "midnight glass" surface is gone along with the tokens it relied
+ * on (aurora background, `text-gradient`, `shadow-glow`). Everything here
+ * reads the light token set from `globals.css` — no ad-hoc hex, no gradient
+ * invented per component.
  *
- * Live plumbing is unchanged: the `getHealth` query is the same call with
- * the same key. The setup-progress card reuses the existing, already-shipped
- * `OnboardingChecklist`, which sources its own real data from
- * `GET /api/v1/onboarding/progress`. No API contract is modified.
+ * Every number on this page comes from `GET /api/v1/overview`, one request
+ * shared by the tiles, both charts, the gauge and the table, so no two
+ * panels can disagree. Where the API cannot source a figure it sends
+ * `null`, and this page renders the absence (no delta chip) rather than
+ * substituting a zero.
  */
 
-type MetricTone = "violet" | "blue" | "cyan" | "fuchsia"
+type RecentDeal = OverviewResponse["recentDeals"][number]
 
-type Metric = {
-  label: string
-  value: string
-  caption: string
-  icon: ReactNode
-  tone: MetricTone
+function formatMoney(value: number, currency: string): string {
+  return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(value)
 }
 
-type IconProps = { children: ReactNode }
+function formatCount(value: number): string {
+  return new Intl.NumberFormat().format(value)
+}
 
-function Icon({ children }: IconProps) {
+/**
+ * A delta is a ratio from the API. It becomes a tile chip only when the API
+ * actually had a prior period to compare with; `null` means "unknown", which
+ * is not the same as "unchanged".
+ */
+function deltaChip(delta: number | null) {
+  if (delta === null) return undefined
+  const pct = Math.round(Math.abs(delta) * 100)
+  return {
+    value: `${pct}%`,
+    direction: delta >= 0 ? ("up" as const) : ("down" as const),
+  }
+}
+
+const ICON = {
+  pipeline: (
+    <path d="M3 6h18M6 12h12M10 18h4" />
+  ),
+  won: <path d="M20 6 9 17l-5-5" />,
+  contacts: (
+    <>
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 11.2a3 3 0 0 0 0-5.9M18.5 19a5.2 5.2 0 0 0-2.4-4.3" />
+    </>
+  ),
+  activity: <path d="M3 12h4l3 7 4-14 3 7h4" />,
+}
+
+function Icon({ children }: { children: React.ReactNode }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -56,323 +91,252 @@ function Icon({ children }: IconProps) {
   )
 }
 
-const ICONS = {
-  people: (
-    <Icon>
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </Icon>
-  ),
-  deals: (
-    <Icon>
-      <rect x="2" y="7" width="20" height="14" rx="2" />
-      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-      <path d="M2 13h20" />
-    </Icon>
-  ),
-  tasks: (
-    <Icon>
-      <path d="M9 11l3 3L22 4" />
-      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-    </Icon>
-  ),
-  leads: (
-    <Icon>
-      <path d="M12 2v4" />
-      <path d="M12 18v4" />
-      <circle cx="12" cy="12" r="4" />
-      <path d="M4.9 4.9l2.8 2.8" />
-      <path d="M16.3 16.3l2.8 2.8" />
-      <path d="M19.1 4.9l-2.8 2.8" />
-      <path d="M7.7 16.3l-2.8 2.8" />
-    </Icon>
-  ),
-  arrow: (
-    <Icon>
-      <path d="M5 12h14" />
-      <path d="M13 6l6 6-6 6" />
-    </Icon>
-  ),
-}
-
-/**
- * Icon-tile tints, one hue per metric, kept inside the violet→blue brand
- * family so the dashboard never turns into a rainbow. Dark-mode variants
- * use the light end of each hue for contrast on glass.
- */
-const TONE_TILES: Record<MetricTone, string> = {
-  violet: "bg-violet-500/12 text-violet-700 dark:text-violet-300 ring-violet-500/30",
-  blue: "bg-blue-500/12 text-blue-700 dark:text-blue-300 ring-blue-500/30",
-  cyan: "bg-cyan-500/12 text-cyan-700 dark:text-cyan-300 ring-cyan-500/30",
-  fuchsia: "bg-fuchsia-500/12 text-fuchsia-700 dark:text-fuchsia-300 ring-fuchsia-500/30",
-}
-
-const METRICS: Metric[] = [
-  {
-    label: "People",
-    value: "—",
-    caption: "No data source connected",
-    icon: ICONS.people,
-    tone: "violet",
-  },
-  {
-    label: "Open deals",
-    value: "—",
-    caption: "No data source connected",
-    icon: ICONS.deals,
-    tone: "blue",
-  },
-  {
-    label: "Tasks due",
-    value: "—",
-    caption: "No data source connected",
-    icon: ICONS.tasks,
-    tone: "cyan",
-  },
-  {
-    label: "New leads",
-    value: "—",
-    caption: "No data source connected",
-    icon: ICONS.leads,
-    tone: "fuchsia",
-  },
-]
-
-const QUICK_LINKS = [
-  { href: "/app/people", label: "People", hint: "Contacts & companies", icon: ICONS.people },
-  { href: "/app/deals", label: "Deals", hint: "Pipeline & stages", icon: ICONS.deals },
-  { href: "/app/tasks", label: "Tasks", hint: "What is due next", icon: ICONS.tasks },
-  { href: "/app/reports", label: "Reports", hint: "Insights & exports", icon: ICONS.leads },
-]
-
-function statusOf(health: ReturnType<typeof useQuery<HealthResponse>>) {
-  if (health.isPending) return { tone: "secondary" as const, label: "Checking" }
-  if (health.isError) return { tone: "destructive" as const, label: "Offline" }
-  return health.data.status === "ok"
-    ? { tone: "success" as const, label: "Operational" }
-    : { tone: "warning" as const, label: "Degraded" }
-}
-
-function Card({ children, className }: { children: ReactNode; className?: string }) {
+function Panel({
+  title,
+  action,
+  children,
+  className,
+}: {
+  title: string
+  action?: React.ReactNode
+  children: React.ReactNode
+  className?: string
+}) {
   return (
-    <section className={cn("rounded-xl border border-border bg-card shadow-panel", className)}>
+    <section
+      className={cn(
+        "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface-1)]",
+        "p-5 shadow-[var(--shadow-card)]",
+        className,
+      )}
+    >
+      <header className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold text-[var(--text-primary)]">{title}</h2>
+        {action}
+      </header>
       {children}
     </section>
   )
 }
 
-function CardHeader({
-  title,
-  description,
-  action,
-  id,
-}: {
-  title: string
-  description?: string
-  action?: ReactNode
-  id?: string
-}) {
+const DEAL_COLUMNS: DataTableColumn<RecentDeal>[] = [
+  {
+    id: "name",
+    header: "Deal",
+    accessor: (row) => <span className="font-medium text-[var(--text-primary)]">{row.name}</span>,
+  },
+  {
+    id: "company",
+    header: "Company",
+    // An unlinked deal is genuinely companyless; an em dash says so.
+    accessor: (row) => row.company ?? <span className="text-[var(--text-muted)]">—</span>,
+  },
+  {
+    id: "stage",
+    header: "Stage",
+    accessor: (row) => (
+      <span className="rounded-[var(--radius-pill)] bg-[var(--surface-2)] px-2.5 py-1 text-xs capitalize text-[var(--text-secondary)]">
+        {row.stage.replace(/_/g, " ")}
+      </span>
+    ),
+  },
+  {
+    id: "amount",
+    header: "Amount",
+    align: "right",
+    accessor: (row) =>
+      row.amount === null ? (
+        <span className="text-[var(--text-muted)]">—</span>
+      ) : (
+        formatMoney(row.amount, row.currency)
+      ),
+  },
+]
+
+function LoadingState() {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
-      <div className="min-w-0">
-        <h2 id={id} className="text-sm font-semibold tracking-tight text-foreground">
-          {title}
-        </h2>
-        {description ? <p className="mt-0.5 text-xs text-muted-foreground">{description}</p> : null}
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-[104px] rounded-[var(--radius-card)]" />
+        ))}
       </div>
-      {action}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Skeleton className="h-[320px] rounded-[var(--radius-card)] lg:col-span-2" />
+        <Skeleton className="h-[320px] rounded-[var(--radius-card)]" />
+      </div>
+      <Skeleton className="h-[280px] rounded-[var(--radius-card)]" />
     </div>
   )
 }
 
 export default function DashboardPage() {
-  const health = useQuery({ queryKey: ["health"], queryFn: ({ signal }) => getHealth(signal) })
-  const refresh = useMutation({ mutationFn: () => health.refetch() })
-  const status = statusOf(health)
+  const overview = useQuery({
+    queryKey: ["overview"],
+    queryFn: ({ signal }) => getOverview(signal),
+  })
+
+  const data = overview.data
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-      {/* Page header */}
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Workspace overview
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-[var(--text-primary)]">
+            Overview
+          </h1>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            Your pipeline and activity across the last 30 days.
           </p>
-          <h1 className="text-gradient mt-0.5 text-2xl font-semibold">Dashboard</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge tone={status.tone} aria-live="polite">
-            {status.label}
-          </Badge>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refresh.mutate()}
-            disabled={refresh.isPending}
-          >
-            {refresh.isPending ? "Refreshing…" : "Refresh"}
-          </Button>
-        </div>
-      </header>
-
-      {/* Metrics */}
-      <section aria-label="Key metrics" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {METRICS.map((metric) => (
-          <Card
-            key={metric.label}
-            className="group p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {metric.label}
-              </span>
-              <span
-                className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-lg ring-1 ring-inset transition-transform duration-200 group-hover:scale-105",
-                  TONE_TILES[metric.tone],
-                )}
-              >
-                {metric.icon}
-              </span>
-            </div>
-            <p className="text-gradient mt-3 text-3xl font-semibold tabular-nums tracking-tight">
-              {metric.value}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">{metric.caption}</p>
-          </Card>
-        ))}
-      </section>
-
-      {/* Actions + workspace health */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader
-            id="quick-links-heading"
-            title="Quick links"
-            description="Jump straight into the areas you use most."
-          />
-          <div className="grid gap-3 p-5 sm:grid-cols-2">
-            {QUICK_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <span className="bg-gradient-brand-soft flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-primary ring-1 ring-inset ring-primary/25">
-                  {link.icon}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium text-foreground">{link.label}</span>
-                  <span className="block truncate text-xs text-muted-foreground">{link.hint}</span>
-                </span>
-                <span className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary">
-                  {ICONS.arrow}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </Card>
-
-        <div className="flex flex-col gap-6">
-          <Card className="transition-all duration-200 hover:border-primary/30 hover:shadow-glow">
-            <CardHeader
-              id="setup-heading"
-              title="Setup progress"
-              description="Tracked automatically from real workspace data."
-            />
-            <div className="p-5">
-              <OnboardingChecklist compact />
-            </div>
-          </Card>
-        </div>
+        <Link href="/app/deals" className={cn(buttonVariants({ size: "sm" }))}>
+          View pipeline
+        </Link>
       </div>
 
-      {/* System status */}
-      <Card>
-        <CardHeader
-          id="api-status-heading"
-          title="API status"
-          description="Live health of the services this workspace depends on."
-          action={<Badge tone={status.tone}>{status.label}</Badge>}
-        />
-        <div className="p-5">
-          {health.isPending ? (
-            <div
-              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
-              aria-busy="true"
-              aria-label="Checking API status"
-            >
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
-            </div>
-          ) : health.isError ? (
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium text-destructive">API unreachable</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Start it with <code className="font-mono">bun run dev</code> in{" "}
-                  <code className="font-mono">apps/api</code>.
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => refresh.mutate()}
-                disabled={refresh.isPending}
-              >
-                Try again
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {Object.entries(health.data.checks).map(([name, check]) => (
-                  <div
-                    key={name}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2.5"
-                  >
-                    <span className="text-sm capitalize text-muted-foreground">{name}</span>
-                    <span className="flex items-center gap-2">
-                      <span
-                        aria-hidden="true"
-                        className={cn(
-                          "h-2 w-2 rounded-full",
-                          check.ok
-                            ? "bg-success shadow-[0_0_8px_2px_hsl(var(--success)/0.55)]"
-                            : "bg-destructive",
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          "text-xs font-medium",
-                          check.ok ? "text-foreground" : "text-destructive",
-                        )}
-                      >
-                        {check.ok ? "Operational" : "Down"}
-                      </span>
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4">
-                <p className="text-xs text-muted-foreground">
-                  Status <span className="font-medium text-foreground">{health.data.status}</span> ·
-                  version {health.data.version}
-                </p>
-                <Link
-                  href="/app/settings"
-                  className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-xs")}
-                >
-                  Workspace settings
-                </Link>
-              </div>
-            </div>
-          )}
+      {overview.isPending ? <LoadingState /> : null}
+
+      {overview.isError ? (
+        <div
+          role="alert"
+          className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface-1)] p-5"
+        >
+          <p className="text-sm font-medium text-[var(--text-primary)]">
+            Could not load your overview.
+          </p>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            {overview.error instanceof Error ? overview.error.message : "Unexpected error."}
+          </p>
+          <button
+            type="button"
+            onClick={() => void overview.refetch()}
+            className={cn(buttonVariants({ size: "sm", variant: "outline" }), "mt-3")}
+          >
+            Try again
+          </button>
         </div>
-      </Card>
+      ) : null}
+
+      {data ? (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatTile
+              label="Open pipeline"
+              value={formatMoney(
+                data.kpis.openPipelineValue.value,
+                data.kpis.openPipelineValue.currency ?? "USD",
+              )}
+              delta={deltaChip(data.kpis.openPipelineValue.delta)}
+              caption="Value of deals still open"
+              icon={<Icon>{ICON.pipeline}</Icon>}
+            />
+            <StatTile
+              label="Deals won"
+              value={formatCount(data.kpis.dealsWonThisMonth.value)}
+              delta={deltaChip(data.kpis.dealsWonThisMonth.delta)}
+              caption="Last 30 days"
+              icon={<Icon>{ICON.won}</Icon>}
+            />
+            <StatTile
+              label="New contacts"
+              value={formatCount(data.kpis.newContactsThisMonth.value)}
+              delta={deltaChip(data.kpis.newContactsThisMonth.delta)}
+              caption="Last 30 days"
+              icon={<Icon>{ICON.contacts}</Icon>}
+            />
+            <StatTile
+              label="Activities"
+              value={formatCount(data.kpis.activitiesThisWeek.value)}
+              delta={deltaChip(data.kpis.activitiesThisWeek.delta)}
+              caption="Last 7 days"
+              icon={<Icon>{ICON.activity}</Icon>}
+            />
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Panel title="Deals created vs won" className="lg:col-span-2">
+              <AreaChart
+                data={data.trend.map((point) => ({
+                  label: point.date,
+                  value: point.created,
+                  compare: point.won,
+                }))}
+                series="Created"
+                compareSeries="Won"
+                formatValue={formatCount}
+              />
+            </Panel>
+
+            <Panel title="Goal attainment">
+              {/*
+                The gauge reads as a percentage, not as a raw currency figure:
+                the ring encodes a fraction, so the headline should too. The
+                money it is a fraction *of* goes in the caption underneath.
+              */}
+              <RadialGauge
+                value={data.goal.attained * 100}
+                max={100}
+                formatValue={(v) => `${Math.round(v)}%`}
+                label="Won this period"
+                caption={`${formatMoney(
+                  data.goal.wonValue,
+                  data.kpis.openPipelineValue.currency ?? "USD",
+                )} of ${formatMoney(
+                  data.goal.targetValue,
+                  data.kpis.openPipelineValue.currency ?? "USD",
+                )}`}
+              />
+            </Panel>
+          </div>
+
+          {/*
+            `items-start` matters here: the onboarding checklist is far taller
+            than the bar chart, and a stretched grid row left the chart panel
+            with a tall band of empty surface under it.
+          */}
+          <div className="grid items-start gap-4 lg:grid-cols-3">
+            <Panel title="Activity by day" className="lg:col-span-2">
+              <BarChart
+                data={data.activityByDay.map((point) => ({
+                  label: point.label,
+                  value: point.count,
+                }))}
+                // Today is the last bucket; the spec highlights it.
+                highlightIndex={data.activityByDay.length - 1}
+                formatValue={formatCount}
+              />
+            </Panel>
+
+            <Panel title="Set up your workspace">
+              <OnboardingChecklist />
+            </Panel>
+          </div>
+
+          <Panel
+            title="Recent deals"
+            action={
+              <Link
+                href="/app/deals"
+                className="text-sm font-medium text-[var(--brand)] hover:underline"
+              >
+                View all
+              </Link>
+            }
+          >
+            {data.recentDeals.length === 0 ? (
+              <p className="py-8 text-center text-sm text-[var(--text-secondary)]">
+                No deals yet. Create one to see it here.
+              </p>
+            ) : (
+              <DataTable
+                rows={data.recentDeals}
+                columns={DEAL_COLUMNS}
+                getRowId={(row) => row.id}
+              />
+            )}
+          </Panel>
+        </>
+      ) : null}
     </div>
   )
 }

@@ -6,6 +6,12 @@ export interface RadialGaugeProps {
   max?: number
   label?: string
   caption?: string
+  /**
+   * Formats the headline number. Without it the raw `value` is printed, which
+   * is rarely what a gauge wants to show — a currency gauge would read
+   * "146900" rather than "$146,900" or the attainment percentage.
+   */
+  formatValue?: (value: number) => string
   className?: string
 }
 
@@ -47,7 +53,15 @@ export function filledTickCount(value: number, max: number, total: number): numb
  * the value at 32px/600 with the caption below in `--text-muted`. A single
  * value ⇒ no legend and no hover layer.
  */
-export function RadialGauge({ value, max = 100, label, caption, className }: RadialGaugeProps) {
+export function RadialGauge({
+  value,
+  max = 100,
+  label,
+  caption,
+  formatValue,
+  className,
+}: RadialGaugeProps) {
+  const headline = formatValue ? formatValue(value) : String(value)
   const filled = filledTickCount(value, max, GAUGE_TICK_COUNT)
   const step = GAUGE_SWEEP_DEG / Math.max(1, GAUGE_TICK_COUNT - 1)
   return (
@@ -55,10 +69,10 @@ export function RadialGauge({ value, max = 100, label, caption, className }: Rad
       <svg
         viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
         role="img"
-        aria-label={`${label ?? "Gauge"}: ${value} of ${max}`}
+        aria-label={`${label ?? "Gauge"}: ${headline} of ${max}`}
         className="h-auto w-full"
       >
-        <title>{`${label ?? "Gauge"}: ${value} of ${max}`}</title>
+        <title>{`${label ?? "Gauge"}: ${headline} of ${max}`}</title>
         {Array.from({ length: GAUGE_TICK_COUNT }, (_, index) => {
           const angle = GAUGE_START_DEG + index * step
           const outer = polar(CENTER_X, CENTER_Y, TICK_OUTER_R, angle)
@@ -96,20 +110,12 @@ export function RadialGauge({ value, max = 100, label, caption, className }: Rad
           className="tabular-nums"
           style={{ fill: "var(--text-primary)" }}
         >
-          {value}
+          {headline}
         </text>
-        {caption === undefined ? null : (
-          <text
-            x={CENTER_X}
-            y={CENTER_Y + 32}
-            textAnchor="middle"
-            fontSize={12}
-            style={{ fill: "var(--text-muted)" }}
-          >
-            {caption}
-          </text>
-        )}
       </svg>
+      {caption === undefined ? null : (
+        <p className="mt-1 text-center text-xs text-[var(--text-muted)]">{caption}</p>
+      )}
     </div>
   )
 }

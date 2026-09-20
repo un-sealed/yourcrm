@@ -67,10 +67,13 @@ export function barPath(x: number, yTop: number, w: number, h: number, yb: numbe
   const yt = yTop
   const f = (n: number): string => n.toFixed(2)
   return (
+    // The space before each curve's endpoint is load-bearing: without it
+    // "Q100.00,50.00104.00,50.00" parses as the single number 50.00104
+    // followed by .00, so the bar renders as a diagonal wedge.
     `M${f(x)},${f(yb)}L${f(x)},${f(yt + r)}` +
-    `Q${f(x)},${f(yt)}${f(x + r)},${f(yt)}` +
+    `Q${f(x)},${f(yt)} ${f(x + r)},${f(yt)}` +
     `L${f(x + w - r)},${f(yt)}` +
-    `Q${f(x + w)},${f(yt)}${f(x + w)},${f(yt + r)}` +
+    `Q${f(x + w)},${f(yt)} ${f(x + w)},${f(yt + r)}` +
     `L${f(x + w)},${f(yb)}Z`
   )
 }
@@ -89,8 +92,8 @@ function defaultFormatValue(value: number): string {
 
 /**
  * Single-series bar chart (spec §3 BarChart). The highlighted bar wears
- * `--brand`; the rest are de-emphasised `--border-strong`
- * (`--surface-2` in dark) — not a second series, so no legend. Bars are
+ * `--brand`; the rest are de-emphasised `--mark-muted` — not a second
+ * series, so no legend, and never a `--chart-N` palette slot. Bars are
  * 4px top-rounded, baseline-anchored, 2px apart; the value label sits above
  * the highlighted bar only. Each bar carries its own hover tooltip.
  */
@@ -167,12 +170,11 @@ export function BarChart({ data, highlightIndex, formatValue, className }: BarCh
                 <path
                   d={d}
                   data-highlight={isHighlight ? "true" : undefined}
-                  className={
-                    isHighlight
-                      ? undefined
-                      : "[fill:var(--border-strong)] dark:[fill:var(--surface-2)]"
-                  }
-                  style={isHighlight ? { fill: "var(--brand)" } : undefined}
+                  // `--mark-muted` is one token that already carries the
+                  // per-mode value, so no `dark:` variant is needed. The dark
+                  // step is deliberately not a surface colour: --surface-2 on
+                  // a --surface-1 card is ~1.1:1 and the bars vanished.
+                  style={{ fill: isHighlight ? "var(--brand)" : "var(--mark-muted)" }}
                 />
               )}
               {isHighlight && d !== "" ? (
