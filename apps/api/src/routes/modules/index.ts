@@ -143,6 +143,11 @@ import {
   openApiPaths as onboardingOpenApiPaths,
 } from "./onboarding"
 import {
+  basePath as overviewBasePath,
+  createRoutes as createOverviewRoutes,
+  openApiPaths as overviewOpenApiPaths,
+} from "./overview"
+import {
   basePath as peopleBasePath,
   createRoutes as createPeopleRoutes,
   openApiPaths as peopleOpenApiPaths,
@@ -248,6 +253,7 @@ export const moduleRoutes: ModuleDefinition[] = [
   { path: marketplaceBasePath, createRoutes: createMarketplaceRoutes, openApiPaths: marketplaceOpenApiPaths },
   { path: notificationsBasePath, createRoutes: createNotificationsRoutes, openApiPaths: notificationsOpenApiPaths },
   { path: onboardingBasePath, createRoutes: createOnboardingRoutes, openApiPaths: onboardingOpenApiPaths },
+  { path: overviewBasePath, createRoutes: createOverviewRoutes, openApiPaths: overviewOpenApiPaths },
   { path: peopleBasePath, createRoutes: createPeopleRoutes, openApiPaths: peopleOpenApiPaths },
   { path: pipelinesBasePath, createRoutes: createPipelinesRoutes, openApiPaths: pipelinesOpenApiPaths },
   { path: portalBasePath, createRoutes: createPortalRoutes, openApiPaths: portalOpenApiPaths },
