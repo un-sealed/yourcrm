@@ -47,16 +47,21 @@ function formatCount(value: number): string {
 }
 
 /**
- * A delta is a ratio from the API. It becomes a tile chip only when the API
- * actually had a prior period to compare with; `null` means "unknown", which
- * is not the same as "unchanged".
+ * The API's `delta` is an *absolute* change against the prior period — a money
+ * amount on the pipeline tile, a plain count on the other three (see
+ * `countDelta` in `packages/crm/src/overview/service.ts`). It is not a ratio:
+ * reading it as one rendered "12 deals won" as "▲1200%".
+ *
+ * Two different things render without a chip. `null` is "the API had no prior
+ * period to compare with" — unknown, not zero. A literal `0` is genuinely
+ * unchanged, and is also dropped because `StatTile` only has ▲/▼ glyphs, so
+ * "▲0" would contradict itself.
  */
-function deltaChip(delta: number | null) {
-  if (delta === null) return undefined
-  const pct = Math.round(Math.abs(delta) * 100)
+function deltaChip(delta: number | null, format: (value: number) => string) {
+  if (delta === null || delta === 0) return undefined
   return {
-    value: `${pct}%`,
-    direction: delta >= 0 ? ("up" as const) : ("down" as const),
+    value: format(Math.abs(delta)),
+    direction: delta > 0 ? ("up" as const) : ("down" as const),
   }
 }
 
@@ -226,28 +231,30 @@ export default function DashboardPage() {
                 data.kpis.openPipelineValue.value,
                 data.kpis.openPipelineValue.currency ?? "USD",
               )}
-              delta={deltaChip(data.kpis.openPipelineValue.delta)}
+              delta={deltaChip(data.kpis.openPipelineValue.delta, (v) =>
+                formatMoney(v, data.kpis.openPipelineValue.currency ?? "USD"),
+              )}
               caption="Value of deals still open"
               icon={<Icon>{ICON.pipeline}</Icon>}
             />
             <StatTile
               label="Deals won"
               value={formatCount(data.kpis.dealsWonThisMonth.value)}
-              delta={deltaChip(data.kpis.dealsWonThisMonth.delta)}
+              delta={deltaChip(data.kpis.dealsWonThisMonth.delta, formatCount)}
               caption="Last 30 days"
               icon={<Icon>{ICON.won}</Icon>}
             />
             <StatTile
               label="New contacts"
               value={formatCount(data.kpis.newContactsThisMonth.value)}
-              delta={deltaChip(data.kpis.newContactsThisMonth.delta)}
+              delta={deltaChip(data.kpis.newContactsThisMonth.delta, formatCount)}
               caption="Last 30 days"
               icon={<Icon>{ICON.contacts}</Icon>}
             />
             <StatTile
               label="Activities"
               value={formatCount(data.kpis.activitiesThisWeek.value)}
-              delta={deltaChip(data.kpis.activitiesThisWeek.delta)}
+              delta={deltaChip(data.kpis.activitiesThisWeek.delta, formatCount)}
               caption="Last 7 days"
               icon={<Icon>{ICON.activity}</Icon>}
             />
@@ -301,8 +308,13 @@ export default function DashboardPage() {
                   label: point.label,
                   value: point.count,
                 }))}
-                // Today is the last bucket; the spec highlights it.
-                highlightIndex={data.activityByDay.length - 1}
+                // Deliberately NOT highlighting today. The repository bounds
+                // today's bucket at `now` (`activitiesByDay(..., weekStart, now)`),
+                // so the last bar is always a partial day and always reads low —
+                // highlighting it made the headline mark look like an activity
+                // collapse every afternoon. Falling through to the chart's
+                // max-value default highlights the busiest day instead, which is
+                // a fact about the week rather than an artefact of the clock.
                 formatValue={formatCount}
               />
             </Panel>
