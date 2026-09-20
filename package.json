@@ -19,6 +19,7 @@
     "db:generate": "bunx drizzle-kit generate --config=packages/database/drizzle.config.ts",
     "db:migrate": "bun run ./packages/database/src/migrate.ts",
     "db:seed": "bun run ./packages/database/src/seed.ts",
+    "db:seed:demo": "bun run ./packages/database/src/seed-demo.ts",
     "clean": "turbo run clean"
   },
   "devDependencies": {
