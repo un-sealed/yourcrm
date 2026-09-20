@@ -1,9 +1,16 @@
-export type NavItem = { href: string; label: string }
+export type NavItem = { href: string; label: string; count?: number }
 export type NavSection = { group: string; items: NavItem[] }
 
+/**
+ * Sidebar groups per docs/design/DASHBOARD-REDESIGN.md §2: uppercase 11px
+ * `--text-muted` section labels (GENERAL, TOOLS, SUPPORT), rendered by
+ * `app-shell.tsx`. `count` is optional — when present the sidebar renders a
+ * right-aligned pill badge; no route currently reports a live count, so no
+ * badge renders until a data source is wired (see report).
+ */
 export const NAV_SECTIONS: NavSection[] = [
   {
-    group: "Sales",
+    group: "General",
     items: [
       { href: "/app/dashboard", label: "Dashboard" },
       { href: "/app/people", label: "People" },
@@ -16,28 +23,16 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    group: "Engage",
+    group: "Tools",
     items: [
       { href: "/app/inbox", label: "Inbox" },
       { href: "/app/email", label: "Email" },
       { href: "/app/whatsapp", label: "WhatsApp" },
       { href: "/app/calling", label: "Calling" },
-    ],
-  },
-  {
-    group: "Business",
-    items: [
       { href: "/app/products", label: "Products" },
       { href: "/app/quotes", label: "Quotes" },
       { href: "/app/invoices", label: "Invoices" },
-      { href: "/app/tickets", label: "Tickets" },
-      { href: "/app/knowledge-base", label: "Knowledge Base" },
       { href: "/app/forms", label: "Forms" },
-    ],
-  },
-  {
-    group: "Platform",
-    items: [
       { href: "/app/automation", label: "Automation" },
       { href: "/app/reports", label: "Reports" },
       { href: "/app/analytics", label: "Analytics" },
@@ -46,6 +41,13 @@ export const NAV_SECTIONS: NavSection[] = [
       { href: "/app/integrations", label: "Integrations" },
       { href: "/app/custom-objects", label: "Custom Objects" },
       { href: "/app/ai", label: "AI Assistant" },
+    ],
+  },
+  {
+    group: "Support",
+    items: [
+      { href: "/app/tickets", label: "Tickets" },
+      { href: "/app/knowledge-base", label: "Knowledge Base" },
       { href: "/app/settings", label: "Settings" },
       { href: "/app/settings/onboarding", label: "Onboarding" },
     ],
