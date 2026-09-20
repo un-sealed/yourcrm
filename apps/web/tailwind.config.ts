@@ -29,6 +29,19 @@ const config: Config = {
           muted: "var(--text-muted)",
         },
         border: { DEFAULT: "var(--border)", strong: "var(--border-strong)" },
+        // The navigation slab's own scale. Deliberately NOT an alias onto
+        // `surface`/`ink`: the sidebar is a dark material in both themes, so
+        // it cannot inherit tokens that flip with the theme.
+        nav: {
+          DEFAULT: "var(--nav-bg)",
+          hover: "var(--nav-hover)",
+          active: "var(--nav-active)",
+          border: "var(--nav-border)",
+          ink: "var(--nav-ink)",
+          "ink-2": "var(--nav-ink-2)",
+          "ink-muted": "var(--nav-ink-muted)",
+          brand: "var(--nav-brand)",
+        },
         // Spec §1 — brand & status.
         brand: {
           DEFAULT: "var(--brand)",

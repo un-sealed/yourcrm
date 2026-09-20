@@ -17,6 +17,9 @@ type MeResponse = { data: { user: { email: string; name?: string | null } } }
  *
  * On the collapsed rail this degrades to the avatar alone; the name and email
  * move into its tooltip rather than being dropped.
+ *
+ * Wears the `nav-*` scale rather than `surface`/`ink`: it sits on the dark
+ * navigation slab, which does not flip with the theme (see sidebar.tsx).
  */
 export function SidebarUser({ expanded }: { expanded: boolean }) {
   const router = useRouter()
@@ -54,8 +57,8 @@ export function SidebarUser({ expanded }: { expanded: boolean }) {
   if (!checked) {
     return (
       <div className={cn("flex h-9 items-center", expanded ? "gap-2.5 px-1" : "justify-center")}>
-        <span className="h-7 w-7 shrink-0 animate-pulse rounded-full bg-surface-2" />
-        {expanded ? <span className="h-3 w-24 animate-pulse rounded bg-surface-2" /> : null}
+        <span className="h-7 w-7 shrink-0 animate-pulse rounded-full bg-nav-hover" />
+        {expanded ? <span className="h-3 w-24 animate-pulse rounded bg-nav-hover" /> : null}
       </div>
     )
   }
@@ -64,7 +67,7 @@ export function SidebarUser({ expanded }: { expanded: boolean }) {
     return expanded ? (
       <a
         href="/login"
-        className="flex h-9 items-center rounded-ctl px-2.5 text-sm text-ink-secondary transition-colors hover:bg-surface-2 hover:text-ink-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-strong"
+        className="flex h-9 items-center rounded-ctl px-2.5 text-sm text-nav-ink-2 transition-colors hover:bg-nav-hover hover:text-nav-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nav-brand"
       >
         Not signed in — log in
       </a>
@@ -73,7 +76,7 @@ export function SidebarUser({ expanded }: { expanded: boolean }) {
         href="/login"
         aria-label="Log in"
         title="Not signed in — log in"
-        className="flex h-9 items-center justify-center rounded-ctl text-ink-secondary transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-strong"
+        className="flex h-9 items-center justify-center rounded-ctl text-nav-ink-2 transition-colors hover:bg-nav-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nav-brand"
       >
         <svg
           viewBox="0 0 24 24"
@@ -99,7 +102,7 @@ export function SidebarUser({ expanded }: { expanded: boolean }) {
         <span
           role="img"
           aria-label={`Signed in as ${user.name}`}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-nav-hover text-sm font-semibold text-nav-brand"
         >
           {initial}
         </span>
@@ -112,20 +115,20 @@ export function SidebarUser({ expanded }: { expanded: boolean }) {
       <span
         role="img"
         aria-label={`Signed in as ${user.name}`}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-nav-hover text-sm font-semibold text-nav-brand"
       >
         {initial}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-ink-primary">{user.name}</p>
-        <p className="truncate text-[11px] text-ink-muted">{user.email}</p>
+        <p className="truncate text-sm font-medium text-nav-ink">{user.name}</p>
+        <p className="truncate text-[11px] text-nav-ink-muted">{user.email}</p>
       </div>
       <button
         type="button"
         onClick={() => void signOut()}
         aria-label="Sign out"
         title="Sign out"
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-ctl text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-strong"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-ctl text-nav-ink-muted transition-colors hover:bg-nav-hover hover:text-nav-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nav-brand"
       >
         <svg
           viewBox="0 0 24 24"

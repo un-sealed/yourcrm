@@ -21,7 +21,7 @@
  * `.bg-sidebar` overrides, `.bg-gradient-brand`,
  * `.bg-gradient-brand-soft`, `.text-gradient`, and `shadow-glow`. The only
  * gradient left in the product is the sidebar "Upgrade to Premium" card
- * (spec §2), built from `--brand` → `--brand-deep` in app-shell.tsx.
+ * (spec §2), built from `--brand` → `--brand-deep` in sidebar.tsx.
  */
 
 @layer base {
@@ -54,6 +54,19 @@
     --series-3: #14b8a6;
     --series-4: #7c3aed;
     --series-5: #e11d48;
+    /* Navigation slab (sidebar.tsx). A constant dark material in BOTH themes,
+       so it is not derived from --surface-*: against the light page it reads as
+       a distinct chrome zone rather than another card, which is what lets the
+       content area carry all the colour. --nav-brand is a lifted blue because
+       --brand (#2563eb) has ~2:1 contrast on this slab and is unreadable. */
+    --nav-bg: #12151c;
+    --nav-hover: #1b2029;
+    --nav-active: #232936;
+    --nav-border: #232833;
+    --nav-ink: #f0f2f6;
+    --nav-ink-2: #9aa3b2;
+    --nav-ink-muted: #838c9c;
+    --nav-brand: #60a5fa;
 
     /* Radius & shadow */
     --radius-card: 14px;
@@ -81,6 +94,17 @@
       --series-3: #0d9488;
       --series-4: #8b5cf6;
       --series-5: #f43f5e;
+      /* The slab stays dark, but drops BELOW --page (#0e1013) instead of sitting
+         above it — otherwise it would be within a shade of the page and the
+         navigation would lose its edge entirely. */
+      --nav-bg: #0a0c10;
+      --nav-hover: #14181f;
+      --nav-active: #1c212a;
+      --nav-border: #1b2027;
+      --nav-ink: #f0f2f6;
+      --nav-ink-2: #9aa3b2;
+      --nav-ink-muted: #838c9c;
+      --nav-brand: #60a5fa;
     }
 
     html {
@@ -106,6 +130,17 @@
     --series-3: #0d9488;
     --series-4: #8b5cf6;
     --series-5: #f43f5e;
+    /* The slab stays dark, but drops BELOW --page (#0e1013) instead of sitting
+       above it — otherwise it would be within a shade of the page and the
+       navigation would lose its edge entirely. */
+    --nav-bg: #0a0c10;
+    --nav-hover: #14181f;
+    --nav-active: #1c212a;
+    --nav-border: #1b2027;
+    --nav-ink: #f0f2f6;
+    --nav-ink-2: #9aa3b2;
+    --nav-ink-muted: #838c9c;
+    --nav-brand: #60a5fa;
   }
 
   /* Explicit light wins over everything, including an OS-dark media match. */
@@ -126,6 +161,19 @@
     --series-3: #14b8a6;
     --series-4: #7c3aed;
     --series-5: #e11d48;
+    /* Navigation slab (sidebar.tsx). A constant dark material in BOTH themes,
+       so it is not derived from --surface-*: against the light page it reads as
+       a distinct chrome zone rather than another card, which is what lets the
+       content area carry all the colour. --nav-brand is a lifted blue because
+       --brand (#2563eb) has ~2:1 contrast on this slab and is unreadable. */
+    --nav-bg: #12151c;
+    --nav-hover: #1b2029;
+    --nav-active: #232936;
+    --nav-border: #232833;
+    --nav-ink: #f0f2f6;
+    --nav-ink-2: #9aa3b2;
+    --nav-ink-muted: #838c9c;
+    --nav-brand: #60a5fa;
   }
 
   * {

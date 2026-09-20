@@ -14,12 +14,15 @@ import { ThemeToggle } from "./theme-toggle"
 import { useUiStore, useWorkspaceStore } from "@/lib/store"
 
 /**
- * Left navigation shell per docs/design/DASHBOARD-REDESIGN.md §2: 248px
- * sidebar (`--surface-1`, 1px right border), grouped nav with uppercase
- * 11px muted section labels, 36px items (active = `--brand-soft` bg +
- * `--brand` text), count badges, and the "Upgrade to Premium" card pinned
- * at the bottom — the ONE gradient allowed in the product. Topbar is 56px
- * with a `--surface-2` search field, ⌘K hint, theme toggle, bell and avatar.
+ * Left navigation shell. The 56px topbar is per
+ * docs/design/DASHBOARD-REDESIGN.md §2 — `--surface-2` search field, ⌘K
+ * hint, theme toggle, bell and avatar.
+ *
+ * The sidebar itself has since departed from §2, which specified a 248px
+ * `--surface-1` column with a `--brand-soft` active row: it is now a dark
+ * slab on its own `--nav-*` scale (see sidebar.tsx for why). What survives
+ * from §2 is the "Upgrade to Premium" card pinned at the bottom, still the
+ * ONE gradient allowed in the product.
  */
 
 const CREATE_LINKS = [
