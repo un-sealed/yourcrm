@@ -1,3 +1,4 @@
+import { loadEnv } from "@yourcrm/config"
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 import * as schema from "./schema"
@@ -13,7 +14,12 @@ let sqlClient: ReturnType<typeof postgres> | null = null
  */
 export function getDb(connectionString?: string): Database {
   if (db) return db
-  const url = connectionString ?? process.env.DATABASE_URL
+  // Resolve through @yourcrm/config, not raw process.env. The config schema
+  // validates DATABASE_URL and supplies the local default, so reading
+  // process.env directly gave two sources of truth: getEnv() would succeed
+  // while getDb() threw, producing a 500 at request time instead of a clear
+  // failure at boot. That surfaced as "invalid email or password" on login.
+  const url = connectionString ?? loadEnv().DATABASE_URL
   if (!url) throw new Error("DATABASE_URL is required (see .env.example)")
   sqlClient = postgres(url, { max: 10, prepare: false })
   db = drizzle(sqlClient, { schema })

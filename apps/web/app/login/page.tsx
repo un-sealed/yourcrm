@@ -33,8 +33,14 @@ export default function LoginPage() {
         body: JSON.stringify({ email: email.trim(), password }),
       })
       if (!res.ok) {
-        // Login failures are generic server-side: mirror that here.
-        setError("Invalid email or password.")
+        // Credential failures are deliberately generic. Server faults are
+        // NOT: reporting a 500 as "invalid password" sends people hunting
+        // for a typo when the API is actually misconfigured or down.
+        setError(
+          res.status >= 500
+            ? "The server hit an error. Check the API logs and try again."
+            : "Invalid email or password.",
+        )
         return
       }
       router.push("/app/dashboard")
