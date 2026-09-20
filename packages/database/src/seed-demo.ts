@@ -2787,11 +2787,21 @@ async function seedFillerDeals(sql: Db, clock: Clock): Promise<void> {
       closeOffset = 7 + Math.floor(rand() * 53)
       closeReason = null
     }
+    // `updated_at` defaults to now(), and the overview buckets its won series
+    // by that column (see overview-repository.ts), so leaving it unset piles
+    // every won filler deal onto today and flattens the trend. A closed deal
+    // was last touched when it closed; an open one somewhere since creation.
+    const touchedDaysAgo =
+      stage === "won" || stage === "lost"
+        ? -closeOffset
+        : Math.floor(rand() * (createdDaysAgo + 1))
+    const touchedAt = clock.at(-touchedDaysAgo, 8 + Math.floor(rand() * 11))
+    const updatedAt = touchedAt < createdAt ? createdAt : touchedAt
     const name = `${companyRow.name} — Follow-on ${n + 1} (Sample)`
     const notes = `Filler coverage deal ${n + 1} (Sample).`
     await sql`
-      INSERT INTO deals (id, workspace_id, owner_id, created_by, created_at, name, amount, currency, pipeline_id, stage_id, stage, probability, expected_close_date, person_id, company_id, close_reason, notes)
-      VALUES (${dealId(index)}::uuid, ${WORKSPACE}::uuid, ${userId(owner)}::uuid, ${userId(owner)}::uuid, ${createdAt}, ${name}, ${amount.toFixed(2)}, 'USD', ${id("pipeline", pipeline)}::uuid, ${id("stage", stageIndex)}::uuid, ${stage}, ${stageProbability(stageIndex)}, ${clock.day(closeOffset)}, ${personId(person)}::uuid, ${companyId(company)}::uuid, ${closeReason}, ${notes})
+      INSERT INTO deals (id, workspace_id, owner_id, created_by, created_at, updated_at, name, amount, currency, pipeline_id, stage_id, stage, probability, expected_close_date, person_id, company_id, close_reason, notes)
+      VALUES (${dealId(index)}::uuid, ${WORKSPACE}::uuid, ${userId(owner)}::uuid, ${userId(owner)}::uuid, ${createdAt}, ${updatedAt}, ${name}, ${amount.toFixed(2)}, 'USD', ${id("pipeline", pipeline)}::uuid, ${id("stage", stageIndex)}::uuid, ${stage}, ${stageProbability(stageIndex)}, ${clock.day(closeOffset)}, ${personId(person)}::uuid, ${companyId(company)}::uuid, ${closeReason}, ${notes})
       ON CONFLICT (id) DO NOTHING`
   }
 }
