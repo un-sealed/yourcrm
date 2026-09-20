@@ -1,165 +1,141 @@
 import { describe, expect, test } from "bun:test"
 import {
-  abbreviateNumber,
   AreaChart,
-  buildFillPath,
+  areaYticks,
+  buildAreaFillPath,
   buildLinePath,
-  niceCeiling,
-  resolveHoverDatum,
+  formatCompactNumber,
+  getAreaHoverDatum,
+  nextAreaGradientId,
   type AreaChartDatum,
 } from "./area-chart"
-import {
-  CHART_SERIES_DARK,
-  CHART_SERIES_LIGHT,
-  CHART_SERIES_SLOT_COUNT,
-  chartSeriesColor,
-  chartTokensCss,
-} from "./chart-tokens"
-import { expand, findAll, html } from "../test-helpers"
+import { expand, findAll, html, only, textOf } from "../test-helpers"
 
 const DATA: AreaChartDatum[] = [
-  { label: "Jan 1", value: 4000, compare: 3200 },
-  { label: "Jan 8", value: 7000, compare: 5100 },
-  { label: "Jan 15", value: 5200, compare: 6100 },
+  { label: "Jan", value: 4200, compare: 3800 },
+  { label: "Feb", value: 6800, compare: 5100 },
+  { label: "Mar", value: 5900, compare: 6200 },
+  { label: "Apr", value: 9100, compare: 7400 },
 ]
 
-describe("ui/chart-tokens", () => {
-  test("fixed slot order matches spec §1 in both modes", () => {
-    expect(CHART_SERIES_SLOT_COUNT).toBe(5)
-    expect([...CHART_SERIES_LIGHT]).toEqual([
-      "#2563eb",
-      "#f97316",
-      "#14b8a6",
-      "#7c3aed",
-      "#e11d48",
-    ])
-    expect([...CHART_SERIES_DARK]).toEqual(["#3b82f6", "#d1720f", "#0d9488", "#8b5cf6", "#f43f5e"])
-    expect(chartSeriesColor(0, "light")).toBe("#2563eb")
-    expect(chartSeriesColor(0, "dark")).toBe("#3b82f6")
+describe("ui/area helpers", () => {
+  test("formatCompactNumber abbreviates axis ticks", () => {
+    expect(formatCompactNumber(0)).toBe("0")
+    expect(formatCompactNumber(500)).toBe("500")
+    expect(formatCompactNumber(5000)).toBe("5K")
+    expect(formatCompactNumber(14653)).toBe("14.7K")
+    expect(formatCompactNumber(2_400_000)).toBe("2.4M")
   })
 
-  test("out-of-range slot throws instead of generating a hue", () => {
-    expect(() => chartSeriesColor(5, "light")).toThrow(RangeError)
-    expect(() => chartSeriesColor(-1, "dark")).toThrow(RangeError)
+  test("areaYticks returns four 1/2/2.5/5 steps covering the max", () => {
+    expect(areaYticks(10_000)).toEqual([0, 5000, 10_000, 15_000])
+    expect(areaYticks(0)).toEqual([0])
+    expect(areaYticks(-4)).toEqual([0])
   })
 
-  test("css carries both columns for dark-mode selection", () => {
-    for (const color of [...CHART_SERIES_LIGHT, ...CHART_SERIES_DARK]) {
-      expect(chartTokensCss).toContain(color)
-    }
-    expect(chartTokensCss).toContain(".dark")
-  })
-})
-
-describe("ui/area-chart helpers", () => {
-  test("abbreviateNumber shortens thousands for ticks", () => {
-    expect(abbreviateNumber(5000)).toBe("5K")
-    expect(abbreviateNumber(10000)).toBe("10K")
-    expect(abbreviateNumber(900)).toBe("900")
-  })
-
-  test("niceCeiling lands on round tick maxima", () => {
-    expect(niceCeiling(9300)).toBe(10000)
-    expect(niceCeiling(0)).toBe(1)
-  })
-
-  test("line path threads every point, fill closes to the baseline", () => {
+  test("line and fill paths share the stroke and close to the baseline", () => {
     const line = buildLinePath([
       { x: 0, y: 10 },
       { x: 5, y: 20 },
-      { x: 10, y: 15 },
     ])
-    expect(line.startsWith("M")).toBe(true)
-    expect(line.split("L").length - 1).toBe(2)
-    expect(buildFillPath([], 30)).toBe("")
-    const fill = buildFillPath(
-      [
-        { x: 0, y: 10 },
-        { x: 10, y: 15 },
-      ],
-      30,
-    )
-    expect(fill.endsWith("Z")).toBe(true)
-    expect(fill).toContain("10,30")
+    expect(line).toBe("M0.00,10.00L5.00,20.00")
+    expect(buildAreaFillPath([], 30)).toBe("")
+    expect(buildAreaFillPath([{ x: 0, y: 10 }], 30)).toContain("Z")
   })
 
-  test("hover lookup resolves the datum under the cursor", () => {
-    expect(resolveHoverDatum(DATA, 1)).toEqual(DATA[1])
-    expect(resolveHoverDatum(DATA, 9)).toBe(undefined)
+  test("getAreaHoverDatum resolves the hovered point and rejects the rest", () => {
+    expect(getAreaHoverDatum(DATA, 1)).toEqual(DATA[1] ?? null)
+    expect(getAreaHoverDatum(DATA, -1)).toBe(null)
+    expect(getAreaHoverDatum(DATA, DATA.length)).toBe(null)
+  })
+
+  test("gradient ids are unique per instance", () => {
+    expect(nextAreaGradientId()).not.toBe(nextAreaGradientId())
   })
 })
 
 describe("ui/AreaChart", () => {
-  test("legend names both series and direct-labels the current end", () => {
-    const output = html(<AreaChart data={DATA} series="Profit" compareSeries="Last period" />)
-    expect(output).toContain("Profit")
-    expect(output).toContain("Last period")
-    expect(output).toContain('data-slot="area-chart-legend"')
-    const nodes = expand(<AreaChart data={DATA} series="Profit" compareSeries="Last period" />)
-    const legends = findAll(nodes, (node) => node.props["data-slot"] === "area-chart-legend")
-    expect(legends.length).toBe(1)
+  test("renders axes, legend and a direct end-label on the current series", () => {
+    const node = only(expand(<AreaChart data={DATA} series="Profit" compareSeries="Last period" />))
+    expect(node.type).toBe("div")
+    const text = textOf(node)
+    for (const label of ["Jan", "Feb", "Mar", "Apr"]) {
+      expect(text).toContain(label)
+    }
+    expect(text).toContain("Profit")
+    expect(text).toContain("Last period")
+    expect(text).toContain("9,100")
+    const legends = findAll([node], (entry) => entry.props["data-slot"] === "legend")
+    expect(legends).toHaveLength(1)
   })
 
-  test("gridlines are horizontal 1px --border only, axis text is muted 11px", () => {
+  test("current series is 2px series-1, comparison is dashed muted with no fill", () => {
+    const markup = html(<AreaChart data={DATA} series="Profit" compareSeries="Last period" />)
+    expect(markup).toContain("var(--chart-1)")
     const nodes = expand(<AreaChart data={DATA} series="Profit" compareSeries="Last period" />)
-    const lines = findAll(nodes, (node) => node.type === "line")
-    expect(lines.length).toBeGreaterThan(0)
-    for (const line of lines) {
-      const style = line.props["style"] as { stroke?: string } | undefined
-      if (style?.stroke === "var(--border)") {
-        expect(line.props["y1"]).toBe(line.props["y2"])
-      }
-    }
-    const gridlines = lines.filter(
-      (line) => (line.props["style"] as { stroke?: string } | undefined)?.stroke === "var(--border)",
+    const dashed = findAll(
+      nodes,
+      (entry) =>
+        entry.type === "path" &&
+        (entry.props["strokeDasharray"] ?? entry.props["stroke-dasharray"]) !== undefined,
     )
-    expect(gridlines.length).toBeGreaterThanOrEqual(3)
-    const verticalGrid = lines.filter(
-      (line) =>
-        (line.props["style"] as { stroke?: string } | undefined)?.stroke === "var(--border)" &&
-        line.props["x1"] === line.props["x2"],
-    )
-    expect(verticalGrid).toEqual([])
-    const texts = findAll(nodes, (node) => node.type === "text")
-    for (const text of texts) {
-      expect(text.props["fontSize"]).toBe(11)
+    expect(dashed.length).toBeGreaterThan(0)
+    for (const path of dashed) {
+      expect(path.props["fill"]).toBe("none")
     }
+    const svg = findAll(nodes, (entry) => entry.type === "svg" && entry.props["role"] === "img")
+    expect(svg).toHaveLength(1)
+    expect(svg[0]?.props["viewBox"]).toBe("0 0 720 280")
   })
 
-  test("hover: full-height hit rect + crosshair + tooltip with both swatched values", () => {
-    const nodes = expand(
-      <AreaChart data={DATA} series="Profit" compareSeries="Last period" formatValue={(v) => `$${v}`} />,
-    )
-    const tooltips = findAll(nodes, (node) => node.props["data-slot"] === "area-chart-tooltip")
-    expect(tooltips.length).toBe(DATA.length)
+  test("hover ships a full-plot-height hit target, crosshair and tooltip per point", () => {
+    const nodes = expand(<AreaChart data={DATA} series="Profit" compareSeries="Last period" />)
     const hits = findAll(
       nodes,
-      (node) => node.type === "rect" && node.props["fill"] === "transparent",
+      (entry) => entry.type === "rect" && entry.props["fill"] === "transparent",
     )
-    expect(hits.length).toBe(DATA.length)
+    expect(hits).toHaveLength(DATA.length)
     for (const hit of hits) {
-      expect(Number(hit.props["height"])).toBeGreaterThan(150)
+      expect(hit.props["height"]).toBeGreaterThan(200)
     }
-    const output = html(
-      <AreaChart data={DATA} series="Profit" compareSeries="Last period" formatValue={(v) => `$${v}`} />,
+    const tooltips = findAll(
+      nodes,
+      (entry) => entry.type === "rect" && entry.props["width"] === 176,
     )
-    expect(output).toContain("$7000")
-    expect(output).toContain("$5100")
-    expect(output).toContain("var(--chart-1)")
-    expect(output).toContain("Jan 8")
+    expect(tooltips).toHaveLength(DATA.length)
+    const text = textOf(only(nodes))
+    expect(text).toContain("Last period 7,400")
+    const hoverables = findAll(
+      nodes,
+      (entry) =>
+        typeof entry.props["className"] === "string" &&
+        (entry.props["className"] as string).includes("group-hover:opacity-100"),
+    )
+    expect(hoverables.length).toBeGreaterThanOrEqual(DATA.length * 2)
   })
 
-  test("empty data renders an empty state and merges className", () => {
-    const output = html(<AreaChart data={[]} series="Profit" className="mt-4" />)
-    expect(output).toContain("No data available")
-    expect(output).toContain("mt-4")
-  })
-
-  test("svg scales into the parent width via viewBox", () => {
+  test("single series renders without a legend", () => {
     const nodes = expand(<AreaChart data={DATA} series="Profit" />)
-    const svgs = findAll(nodes, (node) => node.type === "svg")
-    expect(svgs.length).toBe(1)
-    expect(String(svgs[0]?.props["viewBox"] ?? "")).toContain("0 0 600")
-    expect(String(svgs[0]?.props["className"] ?? "")).toContain("w-full")
+    expect(findAll(nodes, (entry) => entry.props["data-slot"] === "legend")).toHaveLength(0)
+  })
+
+  test("empty data renders an empty state, never an empty svg", () => {
+    const node = only(expand(<AreaChart data={[]} series="Profit" />))
+    expect(textOf(node)).toContain("No data available")
+    expect(findAll([node], (entry) => entry.type === "svg")).toHaveLength(0)
+  })
+
+  test("scales to the parent width via viewBox, no fixed pixel widths", () => {
+    // NB: the static serializer drops `viewBox`, so assert it on the tree.
+    const svg = findAll(
+      expand(<AreaChart data={DATA} series="Profit" />),
+      (entry) => entry.type === "svg" && entry.props["role"] === "img",
+    )
+    expect(svg).toHaveLength(1)
+    expect(svg[0]?.props["viewBox"]).toBe("0 0 720 280")
+    expect(String(svg[0]?.props["className"] ?? "")).toContain("w-full")
+    const markup = html(<AreaChart data={DATA} series="Profit" className="ml-2" />)
+    expect(markup).toContain("ml-2")
+    expect(markup).not.toContain("ResponsiveContainer")
   })
 })

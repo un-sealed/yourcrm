@@ -1,14 +1,6 @@
 import * as React from "react"
 import { cn } from "../utils"
 
-export interface RadialGaugeTick {
-  x1: number
-  y1: number
-  x2: number
-  y2: number
-  filled: boolean
-}
-
 export interface RadialGaugeProps {
   value: number
   max?: number
@@ -17,101 +9,87 @@ export interface RadialGaugeProps {
   className?: string
 }
 
-const TICK_COUNT = 60
-const SWEEP_DEGREES = 270
-const START_DEGREES = 135
+export const GAUGE_TICK_COUNT = 60
+export const GAUGE_START_DEG = 135
+export const GAUGE_SWEEP_DEG = 270
+const VIEWBOX_WIDTH = 200
+const VIEWBOX_HEIGHT = 176
 const CENTER_X = 100
-const CENTER_Y = 100
-const TICK_OUTER = 84
-const TICK_INNER = 72
+const CENTER_Y = 88
+const TICK_OUTER_R = 80
+const TICK_INNER_R = 66
 
-function round2(value: number): number {
-  return Math.round(value * 100) / 100
+export interface GaugePoint {
+  x: number
+  y: number
 }
 
-/** Ticks lit for `value`/`max`, clamped to [0, count]. Non-finite input -> 0. */
-export function filledTickCount(value: number, max: number, count = TICK_COUNT): number {
-  if (!Number.isFinite(value) || !Number.isFinite(max) || max <= 0) {
+/** Screen-space polar point (degrees, y down): 0° east, 90° south. */
+export function polar(cx: number, cy: number, r: number, angleDeg: number): GaugePoint {
+  const radians = (angleDeg * Math.PI) / 180
+  return { x: cx + r * Math.cos(radians), y: cy + r * Math.sin(radians) }
+}
+
+/** Ticks lit for `value/max`, clamped to 0..total (degenerate ranges stay dark). */
+export function filledTickCount(value: number, max: number, total: number): number {
+  if (!Number.isFinite(value) || !Number.isFinite(max) || !(max > 0) || value <= 0) {
     return 0
   }
-  const ratio = Math.min(Math.max(value, 0), max) / max
-  return Math.max(0, Math.min(count, Math.round(ratio * count)))
+  if (value >= max) {
+    return total
+  }
+  return Math.round((value / max) * total)
 }
 
 /**
- * ~60 discrete 2px ticks on a 270° arc (gap at the bottom). Filled ticks
- * wear `--good`, the remainder `--border`. Pure geometry — testable without
- * a renderer.
+ * Tick-mark gauge (spec §3 RadialGauge). 270° arc of discrete 2px ticks over
+ * a bottom gap; lit ticks wear `--good`, the rest `--border`. Centre shows
+ * the value at 32px/600 with the caption below in `--text-muted`. A single
+ * value ⇒ no legend and no hover layer.
  */
-export function buildGaugeTicks(
-  value: number,
-  max: number,
-  count = TICK_COUNT,
-): RadialGaugeTick[] {
-  const filled = filledTickCount(value, max, count)
-  return Array.from({ length: count }, (_, index) => {
-    const angle = ((START_DEGREES + (SWEEP_DEGREES / count) * (index + 0.5)) * Math.PI) / 180
-    const cos = Math.cos(angle)
-    const sin = Math.sin(angle)
-    return {
-      x1: round2(CENTER_X + TICK_OUTER * cos),
-      y1: round2(CENTER_Y + TICK_OUTER * sin),
-      x2: round2(CENTER_X + TICK_INNER * cos),
-      y2: round2(CENTER_Y + TICK_INNER * sin),
-      filled: index < filled,
-    }
-  })
-}
-
-/**
- * Tick-mark radial gauge (spec §3 RadialGauge). 270° arc of ~60 discrete
- * 2px ticks, filled `--good` up to `value`/`max`, remainder `--border`.
- * Centre value 32px/600 tabular, caption below in muted. Single value ⇒ no
- * legend, no hover layer. viewBox-based SVG renders into the parent width.
- */
-export function RadialGauge({
-  value,
-  max = 100,
-  label,
-  caption,
-  className,
-}: RadialGaugeProps): React.ReactElement {
-  const ticks = buildGaugeTicks(value, max)
+export function RadialGauge({ value, max = 100, label, caption, className }: RadialGaugeProps) {
+  const filled = filledTickCount(value, max, GAUGE_TICK_COUNT)
+  const step = GAUGE_SWEEP_DEG / Math.max(1, GAUGE_TICK_COUNT - 1)
   return (
     <div data-slot="radial-gauge" className={cn("w-full", className)}>
-      {label !== undefined ? (
-        <p
-          data-slot="radial-gauge-label"
-          className="text-center text-[13px]"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          {label}
-        </p>
-      ) : null}
       <svg
-        viewBox="0 0 200 150"
-        className="h-auto w-full"
+        viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
         role="img"
         aria-label={`${label ?? "Gauge"}: ${value} of ${max}`}
+        className="h-auto w-full"
       >
-        {ticks.map((tick, index) => (
-          <line
-            key={index}
-            data-slot="radial-gauge-tick"
-            data-filled={tick.filled}
-            x1={tick.x1}
-            y1={tick.y1}
-            x2={tick.x2}
-            y2={tick.y2}
-            strokeWidth={2}
-            strokeLinecap="round"
-            style={{ stroke: tick.filled ? "var(--good)" : "var(--border)" }}
-          />
-        ))}
+        <title>{`${label ?? "Gauge"}: ${value} of ${max}`}</title>
+        {Array.from({ length: GAUGE_TICK_COUNT }, (_, index) => {
+          const angle = GAUGE_START_DEG + index * step
+          const outer = polar(CENTER_X, CENTER_Y, TICK_OUTER_R, angle)
+          const inner = polar(CENTER_X, CENTER_Y, TICK_INNER_R, angle)
+          return (
+            <line
+              key={index}
+              x1={inner.x}
+              y1={inner.y}
+              x2={outer.x}
+              y2={outer.y}
+              strokeWidth={2}
+              strokeLinecap="round"
+              style={{ stroke: index < filled ? "var(--good)" : "var(--border)" }}
+            />
+          )
+        })}
+        {label === undefined ? null : (
+          <text
+            x={CENTER_X}
+            y={CENTER_Y - 26}
+            textAnchor="middle"
+            fontSize={13}
+            style={{ fill: "var(--text-secondary)" }}
+          >
+            {label}
+          </text>
+        )}
         <text
-          data-slot="radial-gauge-value"
           x={CENTER_X}
-          y={112}
+          y={CENTER_Y + 10}
           textAnchor="middle"
           fontSize={32}
           fontWeight={600}
@@ -120,18 +98,17 @@ export function RadialGauge({
         >
           {value}
         </text>
-        {caption !== undefined ? (
+        {caption === undefined ? null : (
           <text
-            data-slot="radial-gauge-caption"
             x={CENTER_X}
-            y={134}
+            y={CENTER_Y + 32}
             textAnchor="middle"
             fontSize={12}
             style={{ fill: "var(--text-muted)" }}
           >
             {caption}
           </text>
-        ) : null}
+        )}
       </svg>
     </div>
   )

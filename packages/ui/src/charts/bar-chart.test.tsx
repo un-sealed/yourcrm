@@ -1,97 +1,117 @@
 import { describe, expect, test } from "bun:test"
-import { BarChart, buildBarPath, defaultHighlightIndex, type BarChartDatum } from "./bar-chart"
-import { expand, findAll, html, textOf } from "../test-helpers"
+import {
+  BarChart,
+  barPath,
+  defaultHighlightIndex,
+  getBarHoverDatum,
+  resolveHighlightIndex,
+} from "./bar-chart"
+import { expand, findAll, html, only, textOf } from "../test-helpers"
 
-const DATA: BarChartDatum[] = [
-  { label: "Mon", value: 42 },
-  { label: "Tue", value: 88 },
-  { label: "Wed", value: 61 },
+const DATA = [
+  { label: "Mon", value: 12 },
+  { label: "Tue", value: 30 },
+  { label: "Wed", value: 18 },
+  { label: "Thu", value: 7 },
 ]
 
-describe("ui/bar-chart helpers", () => {
-  test("default highlight is the max (ties keep the first)", () => {
+describe("ui/bar helpers", () => {
+  test("defaultHighlightIndex picks the first maximum", () => {
     expect(defaultHighlightIndex(DATA)).toBe(1)
-    expect(
-      defaultHighlightIndex([
-        { label: "A", value: 5 },
-        { label: "B", value: 5 },
-      ]),
-    ).toBe(0)
+    expect(defaultHighlightIndex([])).toBe(-1)
   })
 
-  test("bar path is top-rounded and anchored to the baseline", () => {
-    const path = buildBarPath(0, 10, 20, 50)
-    expect(path.endsWith("Z")).toBe(true)
-    expect(path).toContain("Q")
-    expect(path).toContain("60")
-    expect(path).not.toContain("NaN")
+  test("resolveHighlightIndex keeps an explicit in-range index, else the default", () => {
+    expect(resolveHighlightIndex(DATA, 3)).toBe(3)
+    expect(resolveHighlightIndex(DATA, 99)).toBe(1)
+    expect(resolveHighlightIndex(DATA, -1)).toBe(1)
+    expect(resolveHighlightIndex(DATA)).toBe(1)
+  })
+
+  test("barPath rounds the top, anchors to the baseline, skips empty bars", () => {
+    const d = barPath(10, 50, 20, 100, 150)
+    expect(d.startsWith("M10.00,150.00")).toBe(true)
+    expect(d.endsWith("Z")).toBe(true)
+    expect(d).toContain("Q")
+    expect(barPath(10, 150, 20, 0, 150)).toBe("")
+    expect(barPath(10, 150, 0, 10, 150)).toBe("")
+  })
+
+  test("getBarHoverDatum resolves the hovered bar and rejects the rest", () => {
+    expect(getBarHoverDatum(DATA, 0)).toEqual(DATA[0] ?? null)
+    expect(getBarHoverDatum(DATA, DATA.length)).toBe(null)
+    expect(getBarHoverDatum(DATA, -1)).toBe(null)
   })
 })
 
 describe("ui/BarChart", () => {
-  test("highlighted bar wears the series slot, the rest are de-emphasized", () => {
-    const nodes = expand(<BarChart data={DATA} highlightIndex={1} />)
-    const bars = findAll(nodes, (node) => node.props["data-slot"] === "bar-chart-bar")
-    expect(bars.length).toBe(DATA.length)
+  test("renders one bar per datum with day labels", () => {
+    const node = only(expand(<BarChart data={DATA} />))
+    const text = textOf(node)
+    for (const day of ["Mon", "Tue", "Wed", "Thu"]) {
+      expect(text).toContain(day)
+    }
+  })
+
+  test("highlight wears --brand, the rest are de-emphasised (no legend, no palette slot)", () => {
+    const nodes = expand(<BarChart data={DATA} />)
+    expect(findAll(nodes, (entry) => entry.props["data-slot"] === "legend")).toHaveLength(0)
+    const highlighted = findAll(nodes, (entry) => entry.props["data-highlight"] === "true")
+    expect(highlighted).toHaveLength(1)
+    const markup = html(<BarChart data={DATA} />)
+    expect(markup).toContain("var(--brand)")
+    expect(markup).toContain("var(--border-strong)")
+    const bars = findAll(nodes, (entry) => entry.type === "path")
+    expect(bars.length).toBeGreaterThan(0)
     for (const bar of bars) {
-      expect(bar.props["data-highlighted"]).toBe(bar.props["data-index"] === 1)
+      const paint = `${String(bar.props["className"] ?? "")}${JSON.stringify(bar.props["style"] ?? {})}`
+      expect(paint).not.toContain("--chart-")
     }
-    const output = html(<BarChart data={DATA} highlightIndex={1} />)
-    expect(output).toContain("var(--chart-1)")
-    expect(output).toContain("var(--chart-muted-bar)")
   })
 
-  test("single series ⇒ no legend, value label above the highlighted bar only", () => {
-    const nodes = expand(
-      <BarChart data={DATA} highlightIndex={1} formatValue={(value) => `${value} visits`} />,
-    )
-    const labels = findAll(
+  test("explicit highlightIndex wins over the max-value default", () => {
+    const nodes = expand(<BarChart data={DATA} highlightIndex={3} />)
+    const highlighted = findAll(nodes, (entry) => entry.props["data-highlight"] === "true")
+    expect(highlighted).toHaveLength(1)
+    expect(textOf(only(nodes))).toContain("7")
+  })
+
+  test("value label sits above the highlighted bar only", () => {
+    const text = textOf(only(expand(<BarChart data={DATA} />)))
+    expect(text).toContain("30")
+  })
+
+  test("every bar ships a per-mark hover tooltip", () => {
+    const nodes = expand(<BarChart data={DATA} />)
+    const hits = findAll(
       nodes,
-      (node) => node.props["data-slot"] === "bar-chart-highlight-label",
+      (entry) => entry.type === "rect" && entry.props["fill"] === "transparent",
     )
-    expect(labels.length).toBe(1)
-    const label = labels[0]
-    expect(label).toBeDefined()
-    if (label !== undefined) {
-      expect(textOf(label)).toBe("88 visits")
-    }
-    const output = html(
-      <BarChart data={DATA} highlightIndex={1} formatValue={(value) => `${value} visits`} />,
+    expect(hits).toHaveLength(DATA.length)
+    const tooltips = findAll(
+      nodes,
+      (entry) => entry.type === "rect" && entry.props["width"] === 120,
     )
-    expect(output).not.toContain("legend")
-    expect(output).toContain("88 visits")
+    expect(tooltips).toHaveLength(DATA.length)
+    expect(textOf(only(nodes))).toContain("Tue")
   })
 
-  test("hover: per-bar tooltip naming its own label and value", () => {
-    const nodes = expand(<BarChart data={DATA} highlightIndex={0} />)
-    const tooltips = findAll(nodes, (node) => node.props["data-slot"] === "bar-chart-tooltip")
-    expect(tooltips.length).toBe(DATA.length)
-    const output = html(<BarChart data={DATA} highlightIndex={0} />)
-    for (const datum of DATA) {
-      expect(output).toContain(datum.label)
-    }
+  test("empty data renders an empty state, never an empty svg", () => {
+    const node = only(expand(<BarChart data={[]} />))
+    expect(textOf(node)).toContain("No data available")
+    expect(findAll([node], (entry) => entry.type === "svg")).toHaveLength(0)
   })
 
-  test("bars use a 2px gap and horizontal gridlines only", () => {
-    const nodes = expand(<BarChart data={DATA} />)
-    const lines = findAll(nodes, (node) => node.type === "line")
-    const gridlines = lines.filter(
-      (line) => (line.props["style"] as { stroke?: string } | undefined)?.stroke === "var(--border)",
+  test("scales to the parent width via viewBox, merges className", () => {
+    // NB: the static serializer drops `viewBox`, so assert it on the tree.
+    const svg = findAll(
+      expand(<BarChart data={DATA} />),
+      (entry) => entry.type === "svg" && entry.props["role"] === "img",
     )
-    expect(gridlines.length).toBeGreaterThanOrEqual(3)
-    for (const line of gridlines) {
-      expect(line.props["y1"]).toBe(line.props["y2"])
-    }
-  })
-
-  test("empty data renders an empty state and svg scales via viewBox", () => {
-    const empty = html(<BarChart data={[]} className="mt-4" />)
-    expect(empty).toContain("No data available")
-    expect(empty).toContain("mt-4")
-    const nodes = expand(<BarChart data={DATA} />)
-    const svgs = findAll(nodes, (node) => node.type === "svg")
-    expect(svgs.length).toBe(1)
-    expect(String(svgs[0]?.props["viewBox"] ?? "")).toContain("0 0 600")
-    expect(String(svgs[0]?.props["className"] ?? "")).toContain("w-full")
+    expect(svg).toHaveLength(1)
+    expect(svg[0]?.props["viewBox"]).toBe("0 0 720 280")
+    const markup = html(<BarChart data={DATA} className="ml-2" />)
+    expect(markup).toContain("ml-2")
+    expect(markup).not.toContain("ResponsiveContainer")
   })
 })

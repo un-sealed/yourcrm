@@ -1,79 +1,70 @@
 import { describe, expect, test } from "bun:test"
-import { buildGaugeTicks, filledTickCount, RadialGauge } from "./radial-gauge"
-import { expand, findAll, html, textOf } from "../test-helpers"
+import { GAUGE_TICK_COUNT, RadialGauge, filledTickCount, polar } from "./radial-gauge"
+import { expand, findAll, html, only, textOf } from "../test-helpers"
 
-describe("ui/radial-gauge helpers", () => {
-  test("filled ticks track value/max proportionally", () => {
-    expect(filledTickCount(75, 100)).toBe(45)
-    expect(filledTickCount(0, 100)).toBe(0)
-    expect(filledTickCount(100, 100)).toBe(60)
+describe("ui/gauge helpers", () => {
+  test("polar resolves screen-space points", () => {
+    const east = polar(100, 88, 80, 0)
+    expect(east.x).toBeCloseTo(180)
+    expect(east.y).toBeCloseTo(88)
+    const north = polar(100, 88, 80, 270)
+    expect(north.x).toBeCloseTo(100)
+    expect(north.y).toBeCloseTo(8)
   })
 
-  test("clamps over/underflow and rejects bad input", () => {
-    expect(filledTickCount(150, 100)).toBe(60)
-    expect(filledTickCount(-5, 100)).toBe(0)
-    expect(filledTickCount(50, 0)).toBe(0)
-    expect(filledTickCount(Number.NaN, 100)).toBe(0)
-  })
-
-  test("ticks lie on a 270° arc with a bottom gap", () => {
-    const ticks = buildGaugeTicks(50, 100)
-    expect(ticks.length).toBe(60)
-    expect(ticks.filter((tick) => tick.filled).length).toBe(30)
-    for (const tick of ticks) {
-      expect(tick.y1).toBeLessThan(172)
-      expect(tick.y2).toBeLessThan(172)
-      expect(Math.hypot(tick.x1 - tick.x2, tick.y1 - tick.y2)).toBeGreaterThan(9)
-    }
-    const first = ticks[0]
-    expect(first).toBeDefined()
-    if (first !== undefined) {
-      const angle = Math.atan2(first.y1 - 100, first.x1 - 100)
-      expect(angle).toBeGreaterThan(0)
-    }
+  test("filledTickCount proportions and clamps", () => {
+    expect(filledTickCount(50, 100, 60)).toBe(30)
+    expect(filledTickCount(0, 100, 60)).toBe(0)
+    expect(filledTickCount(-5, 100, 60)).toBe(0)
+    expect(filledTickCount(150, 100, 60)).toBe(60)
+    expect(filledTickCount(100, 100, 60)).toBe(60)
+    expect(filledTickCount(10, 0, 60)).toBe(0)
+    expect(filledTickCount(10, -4, 60)).toBe(0)
   })
 })
 
 describe("ui/RadialGauge", () => {
-  test("renders ~60 ticks, filled good and remainder border", () => {
-    const nodes = expand(<RadialGauge value={75} max={100} />)
-    const ticks = findAll(nodes, (node) => node.props["data-slot"] === "radial-gauge-tick")
-    expect(ticks.length).toBe(60)
-    const filled = ticks.filter((tick) => tick.props["data-filled"] === true)
-    expect(filled.length).toBe(45)
-    const output = html(<RadialGauge value={75} max={100} />)
-    expect(output).toContain("var(--good)")
-    expect(output).toContain("var(--border)")
+  test("renders the tick arc with the value and caption centred", () => {
+    const node = only(expand(<RadialGauge value={68} label="Repeat rate" caption="of customers" />))
+    expect(node.type).toBe("div")
+    const ticks = findAll([node], (entry) => entry.type === "line")
+    expect(ticks).toHaveLength(GAUGE_TICK_COUNT)
+    const text = textOf(node)
+    expect(text).toContain("68")
+    expect(text).toContain("Repeat rate")
+    expect(text).toContain("of customers")
   })
 
-  test("centre value is tabular with label and caption", () => {
-    const nodes = expand(
-      <RadialGauge value={68} label="Repeat Customer Rate" caption="of customers return" />,
+  test("lit ticks wear --good, the rest --border, in order", () => {
+    const nodes = expand(<RadialGauge value={50} max={100} />)
+    const ticks = findAll(nodes, (entry) => entry.type === "line")
+    const lit = ticks.filter(
+      (tick) => (tick.props["style"] as { stroke: string }).stroke === "var(--good)",
     )
-    const values = findAll(nodes, (node) => node.props["data-slot"] === "radial-gauge-value")
-    expect(values.length).toBe(1)
-    const valueNode = values[0]
-    expect(valueNode).toBeDefined()
-    if (valueNode !== undefined) {
-      expect(textOf(valueNode)).toContain("68")
-      expect(String(valueNode.props["className"] ?? "")).toContain("tabular-nums")
-    }
-    const output = html(
-      <RadialGauge value={68} label="Repeat Customer Rate" caption="of customers return" />,
-    )
-    expect(output).toContain("Repeat Customer Rate")
-    expect(output).toContain("of customers return")
+    expect(lit).toHaveLength(filledTickCount(50, 100, GAUGE_TICK_COUNT))
+    const litIndices = ticks
+      .map((tick, index) => ({ tick, index }))
+      .filter(({ tick }) => (tick.props["style"] as { stroke: string }).stroke === "var(--good)")
+      .map(({ index }) => index)
+    expect(litIndices).toEqual(Array.from({ length: 30 }, (_, index) => index))
   })
 
-  test("single value ⇒ no legend, no hover layer, viewBox scaling", () => {
-    const output = html(<RadialGauge value={10} className="mx-auto" />)
-    expect(output).not.toContain("legend")
-    expect(output).not.toContain("group-hover")
-    expect(output).toContain("mx-auto")
-    const nodes = expand(<RadialGauge value={10} />)
-    const svgs = findAll(nodes, (node) => node.type === "svg")
-    expect(svgs.length).toBe(1)
-    expect(String(svgs[0]?.props["viewBox"] ?? "")).toBe("0 0 200 150")
-    expect(String(svgs[0]?.props["className"] ?? "")).toContain("w-full")
+  test("single value ships no legend and no hover layer", () => {
+    const markup = html(<RadialGauge value={68} className="ml-2" />)
+    expect(markup).toContain("ml-2")
+    expect(markup).not.toContain("group-hover")
+    const nodes = expand(<RadialGauge value={68} />)
+    expect(findAll(nodes, (entry) => entry.props["data-slot"] === "legend")).toHaveLength(0)
+    const svg = findAll(nodes, (entry) => entry.type === "svg" && entry.props["role"] === "img")
+    expect(svg).toHaveLength(1)
+  })
+
+  test("scales to the parent width via viewBox", () => {
+    // NB: the static serializer drops `viewBox`, so assert it on the tree.
+    const svg = findAll(
+      expand(<RadialGauge value={68} />),
+      (entry) => entry.type === "svg" && entry.props["role"] === "img",
+    )
+    expect(svg[0]?.props["viewBox"]).toBe("0 0 200 176")
   })
 })

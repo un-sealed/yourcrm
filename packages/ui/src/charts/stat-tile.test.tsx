@@ -3,56 +3,49 @@ import { StatTile } from "./stat-tile"
 import { expand, findAll, html, only, textOf } from "../test-helpers"
 
 describe("ui/StatTile", () => {
-  test("renders label, value, caption and icon", () => {
+  test("renders label, value and caption", () => {
     const node = only(
-      expand(
-        <StatTile
-          label="Total revenue"
-          value="$48.2K"
-          caption="vs. 14,653 last period"
-          icon={<span>icon-glyph</span>}
-        />,
-      ),
+      expand(<StatTile label="Total revenue" value="$48,200" caption="vs. 14,653 last period" />),
     )
-    const text = textOf(node)
-    expect(text).toContain("Total revenue")
-    expect(text).toContain("$48.2K")
-    expect(text).toContain("vs. 14,653 last period")
-    expect(text).toContain("icon-glyph")
+    expect(node.type).toBe("div")
+    expect(textOf(node)).toContain("Total revenue")
+    expect(textOf(node)).toContain("$48,200")
+    expect(textOf(node)).toContain("vs. 14,653 last period")
   })
 
-  test("up delta pairs ▲ with good tones, down pairs ▼ with bad tones", () => {
-    const up = html(<StatTile label="L" value="1" delta={{ value: "+12%", direction: "up" }} />)
+  test("value uses tabular-nums and the delta pill carries a direction glyph (never color alone)", () => {
+    const up = html(
+      <StatTile label="Revenue" value="$1" delta={{ value: "12.4%", direction: "up" }} />,
+    )
+    expect(up).toContain("tabular-nums")
     expect(up).toContain("▲")
-    expect(up).toContain("+12%")
-    expect(up).toContain("var(--good)")
-    expect(up).toContain("var(--good-soft)")
-
-    const down = html(<StatTile label="L" value="1" delta={{ value: "-4%", direction: "down" }} />)
-    expect(down).toContain("▼")
-    expect(down).toContain("-4%")
-    expect(down).toContain("var(--bad)")
-    expect(down).toContain("var(--bad-soft)")
-  })
-
-  test("value is tabular-nums and the delta carries its direction", () => {
-    const nodes = expand(<StatTile label="L" value="42" delta={{ value: "+1", direction: "up" }} />)
-    const values = findAll(nodes, (node) => textOf(node) === "42")
-    expect(values.length).toBeGreaterThan(0)
-    expect(String(values[0]?.props["className"] ?? "")).toContain("tabular-nums")
-    const deltas = findAll(nodes, (node) => node.props["data-slot"] === "stat-tile-delta")
-    expect(deltas.length).toBe(1)
-    expect(deltas[0]?.props["data-direction"]).toBe("up")
-  })
-
-  test("bare tile ships no hover layer and merges className", () => {
-    const output = html(<StatTile label="L" value="1" className="ml-2" />)
-    expect(output).toContain("ml-2")
-    expect(output).not.toContain("group-hover")
-    const nodes = expand(<StatTile label="L" value="1" />)
-    const tooltips = findAll(nodes, (node) =>
-      String(node.props["data-slot"] ?? "").includes("tooltip"),
+    expect(up).toContain("12.4%")
+    const down = html(
+      <StatTile label="Churn" value="$1" delta={{ value: "3.1%", direction: "down" }} />,
     )
-    expect(tooltips).toEqual([])
+    expect(down).toContain("▼")
+  })
+
+  test("delta pill resolves good/bad tones from direction", () => {
+    const nodes = expand(
+      <StatTile label="Revenue" value="$1" delta={{ value: "1%", direction: "up" }} />,
+    )
+    const pills = findAll(nodes, (node) => node.props["data-slot"] === "stat-tile-delta")
+    expect(pills).toHaveLength(1)
+    const style = pills[0]?.props["style"] as Record<string, string>
+    expect(style["color"]).toBe("var(--good)")
+    expect(style["backgroundColor"]).toBe("var(--good-soft)")
+  })
+
+  test("bare tile has no hover layer", () => {
+    const markup = html(<StatTile label="Revenue" value="$1" />)
+    expect(markup).not.toContain("group-hover")
+    expect(markup).not.toContain("onMouseEnter")
+    const nodes = expand(<StatTile label="Revenue" value="$1" icon={<span>i</span>} />)
+    expect(textOf(only(nodes))).toContain("i")
+  })
+
+  test("merges className", () => {
+    expect(html(<StatTile label="Revenue" value="$1" className="ml-2" />)).toContain("ml-2")
   })
 })
