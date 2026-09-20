@@ -80,9 +80,9 @@ export function MobileNav() {
       >
         <nav aria-label="All modules" className="flex flex-col gap-4">
           {NAV_SECTIONS.map((section) => (
-            <div key={section.group}>
+            <div key={section.id}>
               <p className="px-1 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {section.group}
+                {section.label}
               </p>
               <ul className="flex flex-col gap-0.5">
                 {section.items.map((item) => {
