@@ -94,6 +94,24 @@ function makeClock(now: Date): Clock {
   }
 }
 
+/* --------------------------- deterministic filler -------------------------- */
+
+const FILLER_BASE = 10000
+const FILLER_SEED = 0x5eed42
+const FILLER_PEOPLE_COUNT = 135
+const FILLER_DEAL_COUNT = 72
+
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0
+  return () => {
+    a |= 0
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
 /* ------------------------------- companies -------------------------------- */
 
 type CompanySeed = {
@@ -2597,12 +2615,13 @@ async function seedCompanies(sql: Db): Promise<void> {
   }
 }
 
-async function seedPeople(sql: Db): Promise<void> {
+async function seedPeople(sql: Db, clock: Clock): Promise<void> {
   for (const [i, p] of PEOPLE.entries()) {
     const index = i + 1
+    const createdAt = clock.at(-((index * 23) % 90), 9 + (index % 9))
     await sql`
-      INSERT INTO people (id, workspace_id, owner_id, created_by, first_name, last_name, title, company_id, status, preferred_channel)
-      VALUES (${personId(index)}::uuid, ${WORKSPACE}::uuid, ${userId(p.owner)}::uuid, ${userId(p.owner)}::uuid, ${p.first}, ${p.last}, ${p.title}, ${companyId(p.company)}::uuid, 'active', ${p.channel})
+      INSERT INTO people (id, workspace_id, owner_id, created_by, created_at, first_name, last_name, title, company_id, status, preferred_channel)
+      VALUES (${personId(index)}::uuid, ${WORKSPACE}::uuid, ${userId(p.owner)}::uuid, ${userId(p.owner)}::uuid, ${createdAt}, ${p.first}, ${p.last}, ${p.title}, ${companyId(p.company)}::uuid, 'active', ${p.channel})
       ON CONFLICT (id) DO NOTHING`
     await sql`
       INSERT INTO person_emails (id, workspace_id, person_id, email, label, is_primary)
@@ -2661,6 +2680,164 @@ async function seedActivities(sql: Db, clock: Clock): Promise<void> {
       INSERT INTO activities (id, workspace_id, owner_id, created_by, created_at, title, type, subject_type, subject_id, body, status, due_at, completed_at)
       VALUES (${id("activity", i + 1)}::uuid, ${WORKSPACE}::uuid, ${userId(a.owner)}::uuid, ${userId(a.owner)}::uuid, ${when}, ${a.title}, ${a.type}, ${a.subjectType}, ${activitySubjectId(a)}::uuid, ${a.body}, ${a.status}, ${when}, ${completedAt})
       ON CONFLICT (id) DO NOTHING`
+  }
+}
+
+async function seedFillerPeople(sql: Db, clock: Clock): Promise<void> {
+  const rand = mulberry32(FILLER_SEED)
+  const firstNames: readonly string[] = [
+    "Alex", "Jordan", "Taylor", "Casey", "Riley", "Morgan", "Quinn", "Avery",
+    "Parker", "Hayden", "Emerson", "Finley", "Rowan", "Sawyer", "Elliot", "Devon",
+    "Kerry", "Robin", "Jaime", "Lin",
+  ]
+  const lastNames: readonly string[] = [
+    "Carter", "Nguyen", "Patel", "Garcia", "Kim", "Novak", "Silva", "Meyer",
+    "Khan", "Osei", "Larsen", "Moreau", "Costa", "Weber", "Fontaine", "Iversen",
+    "Petrov", "Sato", "Muller", "Rossi",
+  ]
+  const titles: readonly string[] = [
+    "Operations Manager", "Procurement Specialist", "IT Administrator",
+    "Customer Success Manager", "Sales Representative", "Finance Analyst",
+    "Logistics Coordinator", "Support Engineer",
+  ]
+  const channels: readonly PersonSeed["channel"][] = ["email", "phone", "sms", "whatsapp"]
+  for (let n = 0; n < FILLER_PEOPLE_COUNT; n += 1) {
+    const index = FILLER_BASE + n
+    const first = firstNames[Math.floor(rand() * firstNames.length)] ?? "Alex"
+    const last = lastNames[Math.floor(rand() * lastNames.length)] ?? "Carter"
+    const company = (n % COMPANIES.length) + 1
+    const companyRow = COMPANIES[company - 1]
+    if (companyRow === undefined) throw new Error(`no demo company at index ${company}`)
+    const owner: Owner = rand() < 0.5 ? "admin" : "sales"
+    const title = `${titles[Math.floor(rand() * titles.length)] ?? "Operations Manager"} (Sample)`
+    const channel = channels[Math.floor(rand() * channels.length)] ?? "email"
+    const createdAt = clock.at(-Math.floor(rand() * 90), 8 + Math.floor(rand() * 11))
+    const email = `${first.toLowerCase()}.${last.toLowerCase()}.${index}@${companyRow.domain}`
+    const phone = `+1-800-555-${String(1000 + (n % 9000)).padStart(4, "0")}`
+    await sql`
+      INSERT INTO people (id, workspace_id, owner_id, created_by, created_at, first_name, last_name, title, company_id, status, preferred_channel)
+      VALUES (${personId(index)}::uuid, ${WORKSPACE}::uuid, ${userId(owner)}::uuid, ${userId(owner)}::uuid, ${createdAt}, ${first}, ${last}, ${title}, ${companyId(company)}::uuid, 'active', ${channel})
+      ON CONFLICT (id) DO NOTHING`
+    await sql`
+      INSERT INTO person_emails (id, workspace_id, person_id, email, label, is_primary)
+      VALUES (${id("personEmail", index)}::uuid, ${WORKSPACE}::uuid, ${personId(index)}::uuid, ${email}, 'work', true)
+      ON CONFLICT (id) DO NOTHING`
+    await sql`
+      INSERT INTO person_phones (id, workspace_id, person_id, phone, label, is_primary)
+      VALUES (${id("personPhone", index)}::uuid, ${WORKSPACE}::uuid, ${personId(index)}::uuid, ${phone}, 'mobile', true)
+      ON CONFLICT (id) DO NOTHING`
+  }
+}
+
+async function seedFillerDeals(sql: Db, clock: Clock): Promise<void> {
+  const rand = mulberry32(FILLER_SEED)
+  const p1Open = [1, 2, 3, 4] as const
+  const p2Open = [7, 8, 9] as const
+  for (let n = 0; n < FILLER_DEAL_COUNT; n += 1) {
+    const index = FILLER_BASE + n
+    const person = (n % PEOPLE.length) + 1
+    const personRow = PEOPLE[person - 1]
+    if (personRow === undefined) throw new Error(`no demo person at index ${person}`)
+    const company = personRow.company
+    const companyRow = COMPANIES[company - 1]
+    if (companyRow === undefined) throw new Error(`no demo company at index ${company}`)
+    const owner: Owner = rand() < 0.5 ? "admin" : "sales"
+    let pipeline: number
+    let stageIndex: number
+    let stage: DealStage
+    if (rand() < 0.7) {
+      pipeline = 1
+      const r = rand()
+      if (r < 0.15) {
+        stageIndex = 5
+        stage = "won"
+      } else if (r < 0.28) {
+        stageIndex = 6
+        stage = "lost"
+      } else {
+        stageIndex = p1Open[Math.floor(rand() * p1Open.length)] ?? 1
+        stage = stageIndex === 1 ? "qualification" : stageIndex === 2 ? "discovery" : stageIndex === 3 ? "proposal" : "negotiation"
+      }
+    } else {
+      pipeline = 2
+      const r = rand()
+      if (r < 0.15) {
+        stageIndex = 10
+        stage = "won"
+      } else if (r < 0.28) {
+        stageIndex = 11
+        stage = "lost"
+      } else {
+        stageIndex = p2Open[Math.floor(rand() * p2Open.length)] ?? 7
+        stage = stageIndex === 7 ? "qualification" : stageIndex === 8 ? "proposal" : "negotiation"
+      }
+    }
+    const createdDaysAgo = Math.floor(90 * rand() * rand())
+    const createdAt = clock.at(-createdDaysAgo, 8 + Math.floor(rand() * 11))
+    const amount = Math.floor((8000 + rand() * 180000) / 250) * 250
+    let closeOffset: number
+    let closeReason: string | null
+    if (stage === "won") {
+      closeOffset = -Math.floor(rand() * (createdDaysAgo + 1))
+      closeReason = "Closed won (Sample)"
+    } else if (stage === "lost") {
+      closeOffset = -Math.floor(rand() * (createdDaysAgo + 1))
+      closeReason = "Lost on budget (Sample)"
+    } else {
+      closeOffset = 7 + Math.floor(rand() * 53)
+      closeReason = null
+    }
+    const name = `${companyRow.name} — Follow-on ${n + 1} (Sample)`
+    const notes = `Filler coverage deal ${n + 1} (Sample).`
+    await sql`
+      INSERT INTO deals (id, workspace_id, owner_id, created_by, created_at, name, amount, currency, pipeline_id, stage_id, stage, probability, expected_close_date, person_id, company_id, close_reason, notes)
+      VALUES (${dealId(index)}::uuid, ${WORKSPACE}::uuid, ${userId(owner)}::uuid, ${userId(owner)}::uuid, ${createdAt}, ${name}, ${amount.toFixed(2)}, 'USD', ${id("pipeline", pipeline)}::uuid, ${id("stage", stageIndex)}::uuid, ${stage}, ${stageProbability(stageIndex)}, ${clock.day(closeOffset)}, ${personId(person)}::uuid, ${companyId(company)}::uuid, ${closeReason}, ${notes})
+      ON CONFLICT (id) DO NOTHING`
+  }
+}
+
+async function seedFillerActivities(sql: Db, clock: Clock): Promise<void> {
+  const rand = mulberry32(FILLER_SEED)
+  const types: readonly ActivitySeed["type"][] = ["call", "email", "meeting", "note"]
+  let ordinal = 0
+  for (let dayOffset = -29; dayOffset <= 0; dayOffset += 1) {
+    const weekday = clock.at(dayOffset).getUTCDay()
+    const isWeekend = weekday === 0 || weekday === 6
+    const min = isWeekend ? 3 : 6
+    const max = isWeekend ? 5 : 14
+    const count = min + Math.floor(rand() * (max - min + 1))
+    for (let k = 0; k < count; k += 1) {
+      ordinal += 1
+      const index = FILLER_BASE + ordinal
+      const type = types[Math.floor(rand() * types.length)] ?? "note"
+      const subjectKind = Math.floor(rand() * 4)
+      let subjectType: ActivitySeed["subjectType"]
+      let subjectId: string
+      if (subjectKind === 0) {
+        subjectType = "deal"
+        subjectId = dealId((ordinal % DEALS.length) + 1)
+      } else if (subjectKind === 1) {
+        subjectType = "person"
+        subjectId = personId((ordinal % PEOPLE.length) + 1)
+      } else if (subjectKind === 2) {
+        subjectType = "company"
+        subjectId = companyId((ordinal % COMPANIES.length) + 1)
+      } else {
+        subjectType = "lead"
+        subjectId = leadId((ordinal % LEADS.length) + 1)
+      }
+      const owner: Owner = rand() < 0.5 ? "admin" : "sales"
+      const when = clock.at(dayOffset, 8 + Math.floor(rand() * 11))
+      const rStatus = rand()
+      const status: ActivitySeed["status"] = rStatus < 0.8 ? "completed" : rStatus < 0.95 ? "open" : "cancelled"
+      const completedAt = status === "completed" ? when : null
+      const title = `${type.charAt(0).toUpperCase() + type.slice(1)} touchpoint ${ordinal} (Sample)`
+      const body = `Filler coverage activity ${ordinal} for dashboard trend (Sample).`
+      await sql`
+        INSERT INTO activities (id, workspace_id, owner_id, created_by, created_at, title, type, subject_type, subject_id, body, status, due_at, completed_at)
+        VALUES (${id("activity", index)}::uuid, ${WORKSPACE}::uuid, ${userId(owner)}::uuid, ${userId(owner)}::uuid, ${when}, ${title}, ${type}, ${subjectType}, ${subjectId}::uuid, ${body}, ${status}, ${when}, ${completedAt})
+        ON CONFLICT (id) DO NOTHING`
+    }
   }
 }
 
@@ -2892,11 +3069,14 @@ async function main(): Promise<void> {
     const clock = makeClock(nowRows[0]!.now)
 
     await seedCompanies(sql)
-    await seedPeople(sql)
+    await seedPeople(sql, clock)
+    await seedFillerPeople(sql, clock)
     await seedPipelines(sql)
     await seedDeals(sql, clock)
+    await seedFillerDeals(sql, clock)
     await seedLeads(sql, clock)
     await seedActivities(sql, clock)
+    await seedFillerActivities(sql, clock)
     await seedTasks(sql, clock)
     await seedTickets(sql, clock)
     await seedProducts(sql)
