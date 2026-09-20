@@ -11,6 +11,8 @@ import {
   TextArea,
 } from "@yourcrm/ui"
 import { ApiError, apiFetch, apiFetchRaw } from "@/lib/api-client"
+import { AnswerBody, ToolDataPanel } from "./answer-view"
+import { parseToolDataset } from "./answer"
 import {
   describeAttribution,
   formatTimestamp,
@@ -134,6 +136,20 @@ export default function AiAssistantPage() {
             runs: [...base.runs, answer.run],
           }
         })
+        // The ask response carries only the two prose messages. The tool rows
+        // that back the answer — and the datasets inside them — live on the
+        // conversation, so without this refetch the tool-call badges and the
+        // data panel appeared only after the conversation was reopened, which
+        // is exactly the turn a reader most wants to audit.
+        try {
+          setDetail(
+            await apiFetch<AiConversationDetail>(
+              `/api/v1/ai/conversations/${answer.conversation.id}`,
+            ),
+          )
+        } catch {
+          // Non-fatal: the optimistic thread above already shows the answer.
+        }
         setConversations((current) =>
           current.some((row) => row.id === answer.conversation.id)
             ? current.map((row) => (row.id === answer.conversation.id ? answer.conversation : row))
@@ -380,15 +396,41 @@ function AiBubble({
 }) {
   const mine = message.role === "user"
   const attribution = mine ? "" : describeAttribution(message, run)
+
+  // The rows behind the answer. A tool row whose result is not a dataset
+  // (an error payload, the object-list tool, a truncated result) yields
+  // null and simply contributes no table.
+  const datasets = mine
+    ? []
+    : toolRows.flatMap((row) => {
+        const dataset = parseToolDataset(row.content)
+        return dataset === null ? [] : [{ id: row.id, label: row.toolName ?? "Result", dataset }]
+      })
+
   return (
-    <li className={`flex flex-col gap-1 ${mine ? "items-end" : "items-start"}`}>
+    <li className={`flex flex-col gap-1.5 ${mine ? "items-end" : "items-start"}`}>
+      {/*
+        A question is a short bubble; an answer can be a table, a list or a
+        code block, so it gets a full-width card instead. Capping the
+        assistant at 80% squeezed every table into a narrow column and was a
+        large part of why answers read as cramped.
+      */}
       <div
-        className={`max-w-[80%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm ${
-          mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
-        }`}
+        className={
+          mine
+            ? "max-w-[80%] whitespace-pre-wrap rounded-card bg-brand px-3 py-2 text-sm text-white"
+            : "w-full rounded-card border border-border bg-surface-1 px-4 py-3 shadow-card"
+        }
       >
-        {message.content}
+        {mine ? message.content : <AnswerBody content={message.content} />}
       </div>
+      {datasets.length > 0 ? (
+        <div className="flex w-full flex-col gap-1.5">
+          {datasets.map((entry) => (
+            <ToolDataPanel key={entry.id} dataset={entry.dataset} label={entry.label} />
+          ))}
+        </div>
+      ) : null}
       {!mine && toolRows.length > 0 ? (
         <ul className="flex flex-wrap gap-1" aria-label="Tool calls used for this answer">
           {toolRows.map((row) => {
