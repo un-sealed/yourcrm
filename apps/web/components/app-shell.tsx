@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { Button, cn } from "@yourcrm/ui"
-import { ALL_ROUTES, NAV_SECTIONS } from "./nav-sections"
+import { useRouter } from "next/navigation"
+import { Button } from "@yourcrm/ui"
+import { ALL_ROUTES } from "./nav-sections"
 import { NotificationBell } from "./notification-bell"
-import { SessionFooter } from "./session-footer"
 import { OfflineBanner } from "./offline-banner"
 import { MobileNav } from "./mobile-nav"
 import { NavIcon } from "./nav-icons"
+import { Sidebar } from "./sidebar"
 import { ThemeToggle } from "./theme-toggle"
 import { useUiStore, useWorkspaceStore } from "@/lib/store"
 
@@ -31,17 +31,7 @@ const CREATE_LINKS = [
   { href: "/app/reports/new", label: "Report" },
 ]
 
-function isActive(pathname: string, href: string): boolean {
-  if (pathname === href) return true
-  if (href === "/app/dashboard") return false
-  if (!pathname.startsWith(`${href}/`)) return false
-  // Parent-highlight nested routes (/app/settings/notifications), but never
-  // when another nav entry is itself the exact match (/app/settings/onboarding).
-  return !ALL_ROUTES.some((route) => route.href === pathname)
-}
-
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
   const { sidebarOpen, toggleSidebar } = useUiStore()
   const workspaceName = useWorkspaceStore((s) => s.workspaceName)
   const [paletteOpen, setPaletteOpen] = useState(false)
@@ -80,104 +70,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       resolves against it and produces no overflow.
     */
     <div className="flex h-dvh overflow-hidden bg-page">
-      {sidebarOpen && (
-        <aside className="hidden w-[248px] shrink-0 flex-col border-r border-border bg-surface-1 md:flex">
-          <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-border px-4">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-ctl bg-brand text-sm font-semibold text-white">
-              {label.charAt(0).toUpperCase()}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-ink-primary">{label}</p>
-              <p className="truncate text-[11px] text-ink-muted">Workspace</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSidebar}
-              aria-label="Collapse sidebar"
-              className="h-7 w-7 text-ink-muted hover:bg-surface-2 hover:text-ink-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-strong"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4"
-                aria-hidden="true"
-              >
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </Button>
-          </div>
-
-          <nav aria-label="Primary" className="flex-1 overflow-y-auto px-2 py-3">
-            {NAV_SECTIONS.map((section) => (
-              <div key={section.group} className="mb-4 last:mb-0">
-                <p className="px-2.5 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-muted">
-                  {section.group}
-                </p>
-                <ul className="flex flex-col gap-0.5">
-                  {section.items.map((item) => {
-                    const active = isActive(pathname, item.href)
-                    return (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          aria-current={active ? "page" : undefined}
-                          className={cn(
-                            "group flex h-9 items-center gap-3 rounded-ctl px-2.5 text-sm transition-colors",
-                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-strong",
-                            active
-                              ? "bg-brand-soft font-medium text-brand"
-                              : "text-ink-secondary hover:bg-surface-2 hover:text-ink-primary",
-                          )}
-                        >
-                          <NavIcon
-                            href={item.href}
-                            className={cn(
-                              "h-[18px] w-[18px] shrink-0",
-                              active ? "text-brand" : "text-ink-muted group-hover:text-ink-primary",
-                            )}
-                          />
-                          <span className="truncate">{item.label}</span>
-                          {item.count !== undefined && (
-                            <span className="ml-auto shrink-0 rounded-pill bg-surface-2 px-1.5 py-0.5 text-xs font-medium tabular-nums text-ink-secondary">
-                              {item.count}
-                            </span>
-                          )}
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            ))}
-          </nav>
-
-          {/* `shrink-0`: the nav above owns the overflow, so the session
-              footer and upgrade card must keep their full height rather than
-              being compressed when the nav list is long. */}
-          <div className="flex shrink-0 flex-col gap-3 p-3">
-            <div className="border-t border-border pt-3 text-xs text-ink-muted">
-              <SessionFooter />
-            </div>
-            <div className="rounded-card bg-gradient-to-br from-brand to-brand-deep p-4 text-white">
-              <p className="text-sm font-semibold">Upgrade to Premium</p>
-              <p className="mt-1 text-xs text-white/80">
-                Unlock AI insights, automations and more.
-              </p>
-              <Link
-                href="/app/settings"
-                className="mt-3 inline-flex h-8 items-center rounded-pill bg-white px-3.5 text-sm font-medium text-brand transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              >
-                Upgrade
-              </Link>
-            </div>
-          </div>
-        </aside>
-      )}
+      <Sidebar
+        expanded={sidebarOpen}
+        onToggle={toggleSidebar}
+        workspaceLabel={label}
+      />
 
       <div className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
         <OfflineBanner />
@@ -185,28 +82,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             is pinned by the layout itself. `shrink-0` keeps the 56px bar from
             being squeezed when the main column is short. */}
         <header className="z-30 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface-1 px-4">
-          {!sidebarOpen && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSidebar}
-              aria-label="Expand sidebar"
-              className="hidden h-8 w-8 text-ink-secondary hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-strong md:inline-flex"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4"
-                aria-hidden="true"
-              >
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </Button>
-          )}
           <button
             type="button"
             onClick={() => setPaletteOpen(true)}
