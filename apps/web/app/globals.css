@@ -2,93 +2,144 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Theme: "midnight glass"
+ *
+ * Dark-first glassmorphism. Surfaces are translucent and frosted
+ * (see the .bg-card / .bg-popover / .bg-sidebar overrides in the utilities
+ * layer below), so the fixed aurora gradient painted behind the app shows
+ * through every panel. Accent system is violet -> blue; use the
+ * `.bg-gradient-brand` / `.text-gradient` / `shadow-glow` helpers for
+ * gradient personality instead of inventing ad-hoc gradients per page.
+ *
+ * Every page composes the same primitive pattern
+ * (`rounded-xl border border-border bg-card shadow-panel`), so re-theming
+ * here propagates app-wide without touching feature pages.
+ */
+
 @layer base {
   :root {
     /* Surfaces */
-    --background: 210 20% 98%;
-    --foreground: 222 25% 12%;
+    --background: 240 30% 97%;
+    --foreground: 240 32% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 222 25% 12%;
+    --card-foreground: 240 32% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 25% 12%;
+    --popover-foreground: 240 32% 12%;
 
-    /* Brand */
-    --primary: 221 83% 53%;
+    /* Brand: violet -> blue gradient endpoints */
+    --primary: 258 78% 56%;
     --primary-foreground: 0 0% 100%;
 
     /* Neutral controls */
-    --secondary: 214 20% 96%;
-    --secondary-foreground: 222 25% 16%;
-    --muted: 214 20% 96%;
-    --muted-foreground: 220 10% 46%;
-    --accent: 214 25% 95%;
-    --accent-foreground: 222 25% 16%;
+    --secondary: 240 22% 95%;
+    --secondary-foreground: 240 30% 16%;
+    --muted: 240 22% 95%;
+    --muted-foreground: 240 12% 44%;
+    --accent: 255 45% 94%;
+    --accent-foreground: 258 60% 28%;
 
     /* Feedback */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --success: 142 71% 40%;
-    --warning: 32 95% 44%;
+    --success: 155 74% 36%;
+    --warning: 32 95% 40%;
 
     /* Lines */
-    --border: 214 20% 90%;
-    --input: 214 20% 88%;
-    --ring: 221 83% 53%;
+    --border: 240 20% 88%;
+    --input: 240 20% 86%;
+    --ring: 258 78% 56%;
 
-    /* Sidebar (its own surface so the nav reads as chrome, not content) */
-    --sidebar: 0 0% 100%;
-    --sidebar-foreground: 222 25% 22%;
-    --sidebar-muted: 220 10% 46%;
-    --sidebar-accent: 221 90% 96%;
-    --sidebar-accent-foreground: 221 83% 40%;
-    --sidebar-border: 214 20% 91%;
+    /* Sidebar (its own translucent surface so the aurora glows through) */
+    --sidebar: 240 36% 99%;
+    --sidebar-foreground: 240 30% 20%;
+    --sidebar-muted: 240 12% 46%;
+    --sidebar-accent: 258 70% 95%;
+    --sidebar-accent-foreground: 258 70% 42%;
+    --sidebar-border: 240 22% 90%;
 
-    --radius: 0.625rem;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 222 32% 8%;
-    --foreground: 213 27% 92%;
-    --card: 222 28% 11%;
-    --card-foreground: 213 27% 92%;
-    --popover: 222 28% 11%;
-    --popover-foreground: 213 27% 92%;
+    /* Surfaces: deep indigo-navy; card/popover/sidebar get frosted in the
+       utilities layer, so their channels stay light enough to read at
+       ~66% opacity over this background. */
+    --background: 243 38% 7%;
+    --foreground: 226 40% 96%;
+    --card: 240 34% 13%;
+    --card-foreground: 226 40% 96%;
+    --popover: 242 34% 11%;
+    --popover-foreground: 226 40% 96%;
 
-    --primary: 217 91% 62%;
-    --primary-foreground: 222 47% 8%;
+    --primary: 258 84% 62%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 24% 18%;
-    --secondary-foreground: 213 27% 92%;
-    --muted: 217 24% 18%;
-    --muted-foreground: 215 16% 64%;
-    --accent: 217 24% 21%;
-    --accent-foreground: 213 27% 92%;
+    --secondary: 242 26% 17%;
+    --secondary-foreground: 226 35% 92%;
+    --muted: 242 26% 16%;
+    --muted-foreground: 226 18% 66%;
+    --accent: 244 32% 21%;
+    --accent-foreground: 226 40% 94%;
 
-    --destructive: 0 63% 56%;
+    --destructive: 0 72% 58%;
     --destructive-foreground: 0 0% 100%;
-    --success: 142 60% 45%;
-    --warning: 32 90% 55%;
+    --success: 155 72% 46%;
+    --warning: 40 95% 58%;
 
-    --border: 217 24% 20%;
-    --input: 217 24% 23%;
-    --ring: 217 91% 62%;
+    --border: 240 30% 22%;
+    --input: 240 30% 24%;
+    --ring: 258 84% 62%;
 
-    --sidebar: 222 32% 7%;
-    --sidebar-foreground: 213 27% 88%;
-    --sidebar-muted: 215 16% 58%;
-    --sidebar-accent: 217 60% 20%;
-    --sidebar-accent-foreground: 213 60% 90%;
-    --sidebar-border: 217 24% 18%;
+    --sidebar: 243 40% 9%;
+    --sidebar-foreground: 226 32% 90%;
+    --sidebar-muted: 226 16% 62%;
+    --sidebar-accent: 258 55% 26%;
+    --sidebar-accent-foreground: 260 100% 94%;
+    --sidebar-border: 240 30% 20%;
   }
 
   * {
     @apply border-border;
   }
 
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv11", "ss01";
     text-rendering: optimizeLegibility;
+    min-height: 100vh;
+  }
+
+  /*
+   * Aurora: three fixed color glows painted behind the whole app. Glass
+   * surfaces (bg-card / bg-popover / bg-sidebar, frosted in the utilities
+   * layer) pick these up; content scrolls above them. z-index stays behind
+   * everything and pointer-events none keeps it purely decorative.
+   */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(48rem 32rem at 12% -10%, hsl(258 90% 58% / 0.08), transparent 60%),
+      radial-gradient(40rem 28rem at 92% 4%, hsl(213 94% 55% / 0.06), transparent 60%),
+      radial-gradient(36rem 26rem at 50% 112%, hsl(285 85% 56% / 0.06), transparent 62%);
+  }
+
+  .dark body::before {
+    background:
+      radial-gradient(48rem 32rem at 12% -10%, hsl(258 90% 60% / 0.2), transparent 60%),
+      radial-gradient(42rem 30rem at 92% 2%, hsl(213 95% 55% / 0.14), transparent 60%),
+      radial-gradient(38rem 28rem at 50% 112%, hsl(285 85% 58% / 0.13), transparent 62%);
   }
 
   /*
@@ -104,6 +155,83 @@
   }
 
   ::selection {
-    background-color: hsl(var(--primary) / 0.22);
+    background-color: hsl(var(--primary) / 0.28);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Brand gradient, left-to-right (violet -> blue). */
+  .bg-gradient-brand {
+    background-image: linear-gradient(
+      120deg,
+      hsl(258 84% 60%),
+      hsl(234 89% 62%) 55%,
+      hsl(199 89% 56%)
+    );
+  }
+
+  /* Same gradient at low alpha, for tinted tiles and soft washes. */
+  .bg-gradient-brand-soft {
+    background-image: linear-gradient(120deg, hsl(258 84% 60% / 0.18), hsl(213 94% 58% / 0.14));
+  }
+
+  /* Gradient-filled text (headings, big figures). */
+  .text-gradient {
+    background-image: linear-gradient(
+      100deg,
+      hsl(258 90% 74%),
+      hsl(217 92% 70%) 60%,
+      hsl(199 92% 64%)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  :root:not(.dark) .text-gradient {
+    background-image: linear-gradient(
+      100deg,
+      hsl(258 76% 52%),
+      hsl(217 86% 50%) 60%,
+      hsl(199 88% 42%)
+    );
+  }
+}
+
+@layer utilities {
+  /*
+   * Glass surfaces. These intentionally shadow Tailwind's generated
+   * color-only utilities: any `bg-card` / `bg-popover` / `bg-sidebar`
+   * anywhere in the app becomes a frosted panel (token channels at reduced
+   * opacity + backdrop blur) so the aurora glows through. Opacity-modified
+   * usages (`bg-card/95`) keep Tailwind's own rule and already pair with a
+   * backdrop-blur class, so they opt out on purpose.
+   */
+  .bg-card {
+    background-color: hsl(var(--card) / 0.66);
+    backdrop-filter: blur(18px) saturate(1.35);
+    -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  }
+
+  .bg-popover {
+    background-color: hsl(var(--popover) / 0.82);
+    backdrop-filter: blur(20px) saturate(1.35);
+    -webkit-backdrop-filter: blur(20px) saturate(1.35);
+  }
+
+  .bg-sidebar {
+    background-color: hsl(var(--sidebar) / 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
   }
 }

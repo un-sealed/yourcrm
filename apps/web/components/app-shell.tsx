@@ -45,7 +45,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {sidebarOpen && (
         <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar md:flex">
           <div className="flex h-14 items-center gap-2.5 border-b border-sidebar-border px-4">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-brand text-sm font-semibold text-primary-foreground shadow-glow">
               Y
             </span>
             <div className="min-w-0 flex-1">
@@ -80,7 +80,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           className={cn(
                             "group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors",
                             active
-                              ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
+                              ? "bg-gradient-brand-soft font-medium text-sidebar-accent-foreground ring-1 ring-inset ring-primary/30"
                               : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
                           )}
                         >
@@ -111,7 +111,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <OfflineBanner />
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-background/60 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/45">
           {!sidebarOpen && (
             <Button
               variant="ghost"
@@ -250,7 +250,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
       aria-label="Command palette"
     >
       <div
-        className="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-card shadow-pop"
+        className="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-popover shadow-pop"
         onClick={(e) => e.stopPropagation()}
       >
         <input

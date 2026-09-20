@@ -10,24 +10,31 @@ import { OnboardingChecklist } from "@/components/onboarding-checklist"
 /**
  * Workspace overview (spec 27 home).
  *
- * Presentation rules: a restrained enterprise layout — a single type scale,
- * one accent colour, hairline borders, tabular figures for numbers, and cards
- * as the only grouping primitive. Content is ordered most-important-first
- * (metrics, then actions, then workspace health) and never presents a number
- * it does not have: metrics that have no data source yet read as a clean
- * em dash with a plain caption rather than a fabricated figure.
+ * Presentation rules: the "midnight glass" showcase surface. Cards are the
+ * only grouping primitive; brand personality comes from the shared theme
+ * system only (glass surfaces via `bg-card`, the aurora background in
+ * `globals.css`, gradient tiles via `bg-gradient-brand(-soft)`,
+ * `text-gradient` headings and `shadow-glow` accents) — never ad-hoc
+ * gradients invented per component. Content stays ordered
+ * most-important-first (metrics, then actions, then workspace health) and
+ * never presents a number it does not have: metrics that have no data
+ * source yet read as a clean em dash with a plain caption rather than a
+ * fabricated figure.
  *
- * Live plumbing is unchanged: the `getHealth` query is the same call with the
- * same key. The setup-progress card reuses the existing, already-shipped
+ * Live plumbing is unchanged: the `getHealth` query is the same call with
+ * the same key. The setup-progress card reuses the existing, already-shipped
  * `OnboardingChecklist`, which sources its own real data from
  * `GET /api/v1/onboarding/progress`. No API contract is modified.
  */
+
+type MetricTone = "violet" | "blue" | "cyan" | "fuchsia"
 
 type Metric = {
   label: string
   value: string
   caption: string
   icon: ReactNode
+  tone: MetricTone
 }
 
 type IconProps = { children: ReactNode }
@@ -90,11 +97,47 @@ const ICONS = {
   ),
 }
 
+/**
+ * Icon-tile tints, one hue per metric, kept inside the violet→blue brand
+ * family so the dashboard never turns into a rainbow. Dark-mode variants
+ * use the light end of each hue for contrast on glass.
+ */
+const TONE_TILES: Record<MetricTone, string> = {
+  violet: "bg-violet-500/12 text-violet-700 dark:text-violet-300 ring-violet-500/30",
+  blue: "bg-blue-500/12 text-blue-700 dark:text-blue-300 ring-blue-500/30",
+  cyan: "bg-cyan-500/12 text-cyan-700 dark:text-cyan-300 ring-cyan-500/30",
+  fuchsia: "bg-fuchsia-500/12 text-fuchsia-700 dark:text-fuchsia-300 ring-fuchsia-500/30",
+}
+
 const METRICS: Metric[] = [
-  { label: "People", value: "—", caption: "No data source connected", icon: ICONS.people },
-  { label: "Open deals", value: "—", caption: "No data source connected", icon: ICONS.deals },
-  { label: "Tasks due", value: "—", caption: "No data source connected", icon: ICONS.tasks },
-  { label: "New leads", value: "—", caption: "No data source connected", icon: ICONS.leads },
+  {
+    label: "People",
+    value: "—",
+    caption: "No data source connected",
+    icon: ICONS.people,
+    tone: "violet",
+  },
+  {
+    label: "Open deals",
+    value: "—",
+    caption: "No data source connected",
+    icon: ICONS.deals,
+    tone: "blue",
+  },
+  {
+    label: "Tasks due",
+    value: "—",
+    caption: "No data source connected",
+    icon: ICONS.tasks,
+    tone: "cyan",
+  },
+  {
+    label: "New leads",
+    value: "—",
+    caption: "No data source connected",
+    icon: ICONS.leads,
+    tone: "fuchsia",
+  },
 ]
 
 const QUICK_LINKS = [
@@ -157,7 +200,7 @@ export default function DashboardPage() {
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Workspace overview
           </p>
-          <h1 className="mt-0.5 text-xl font-semibold">Dashboard</h1>
+          <h1 className="text-gradient mt-0.5 text-2xl font-semibold">Dashboard</h1>
         </div>
         <div className="flex items-center gap-2">
           <Badge tone={status.tone} aria-live="polite">
@@ -177,16 +220,24 @@ export default function DashboardPage() {
       {/* Metrics */}
       <section aria-label="Key metrics" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {METRICS.map((metric) => (
-          <Card key={metric.label} className="p-5">
+          <Card
+            key={metric.label}
+            className="group p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow"
+          >
             <div className="flex items-center justify-between gap-3">
               <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {metric.label}
               </span>
-              <span className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-muted-foreground">
+              <span
+                className={cn(
+                  "flex h-9 w-9 items-center justify-center rounded-lg ring-1 ring-inset transition-transform duration-200 group-hover:scale-105",
+                  TONE_TILES[metric.tone],
+                )}
+              >
                 {metric.icon}
               </span>
             </div>
-            <p className="mt-3 text-3xl font-semibold tabular-nums tracking-tight">
+            <p className="text-gradient mt-3 text-3xl font-semibold tabular-nums tracking-tight">
               {metric.value}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">{metric.caption}</p>
@@ -202,21 +253,21 @@ export default function DashboardPage() {
             title="Quick links"
             description="Jump straight into the areas you use most."
           />
-          <div className="grid gap-px overflow-hidden rounded-b-xl bg-border sm:grid-cols-2">
+          <div className="grid gap-3 p-5 sm:grid-cols-2">
             {QUICK_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="group flex items-center gap-3 bg-card p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
+                <span className="bg-gradient-brand-soft flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-primary ring-1 ring-inset ring-primary/25">
                   {link.icon}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium text-foreground">{link.label}</span>
                   <span className="block truncate text-xs text-muted-foreground">{link.hint}</span>
                 </span>
-                <span className="text-muted-foreground transition-transform group-hover:translate-x-0.5">
+                <span className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary">
                   {ICONS.arrow}
                 </span>
               </Link>
@@ -225,7 +276,7 @@ export default function DashboardPage() {
         </Card>
 
         <div className="flex flex-col gap-6">
-          <Card>
+          <Card className="transition-all duration-200 hover:border-primary/30 hover:shadow-glow">
             <CardHeader
               id="setup-heading"
               title="Setup progress"
@@ -281,7 +332,7 @@ export default function DashboardPage() {
                 {Object.entries(health.data.checks).map(([name, check]) => (
                   <div
                     key={name}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5"
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2.5"
                   >
                     <span className="text-sm capitalize text-muted-foreground">{name}</span>
                     <span className="flex items-center gap-2">
@@ -289,7 +340,9 @@ export default function DashboardPage() {
                         aria-hidden="true"
                         className={cn(
                           "h-2 w-2 rounded-full",
-                          check.ok ? "bg-emerald-500" : "bg-destructive",
+                          check.ok
+                            ? "bg-success shadow-[0_0_8px_2px_hsl(var(--success)/0.55)]"
+                            : "bg-destructive",
                         )}
                       />
                       <span

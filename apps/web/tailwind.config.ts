@@ -52,6 +52,9 @@ const config: Config = {
         xs: "0 1px 2px 0 rgb(15 23 42 / 0.05)",
         panel: "0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px -1px rgb(15 23 42 / 0.08)",
         pop: "0 12px 32px -12px rgb(15 23 42 / 0.28)",
+        // Midnight-glass accents: hairline violet ring + soft outer glow.
+        // Pairs with .bg-gradient-brand (see globals.css).
+        glow: "0 0 0 1px hsl(258 84% 62% / 0.28), 0 16px 44px -16px hsl(258 90% 58% / 0.45), 0 8px 24px -12px hsl(213 94% 58% / 0.32)",
       },
     },
   },
