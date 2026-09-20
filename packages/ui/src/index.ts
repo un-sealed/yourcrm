@@ -154,3 +154,10 @@ export {
   polar,
 } from "./charts/radial-gauge"
 export type { GaugePoint, RadialGaugeProps } from "./charts/radial-gauge"
+export { WidgetPicker, WidgetPickerList, WidgetPickerRow } from "./widget-picker"
+export type {
+  WidgetPickerItem,
+  WidgetPickerListProps,
+  WidgetPickerProps,
+  WidgetPickerRowProps,
+} from "./widget-picker"
