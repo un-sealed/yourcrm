@@ -150,7 +150,10 @@
     @apply bg-page font-sans text-ink-primary antialiased;
     font-feature-settings: "cv11", "ss01";
     text-rendering: optimizeLegibility;
-    min-height: 100vh;
+    /* `dvh`, not `vh`: the app shell is `h-dvh`, and a `100vh` floor here
+       would leave the document scrollable by the height of the mobile
+       browser chrome even though nothing overflows. */
+    min-height: 100dvh;
   }
 
   /*

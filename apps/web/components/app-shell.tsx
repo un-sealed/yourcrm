@@ -60,10 +60,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <div className="flex min-h-screen bg-page">
+    /*
+      Layout contract: the shell is exactly one viewport tall and never
+      scrolls as a document. The sidebar and the main column each own their
+      scrollbar instead.
+
+      Previously this was `min-h-screen`, so the shell grew with whatever the
+      page rendered. That left the <aside> unbounded, which meant its
+      `overflow-y-auto` nav could never engage — the browser scrolled the
+      whole document, and a long page dragged the sidebar's full height along
+      with it.
+
+      `h-dvh` rather than `h-screen`: on mobile `100vh` counts the area behind
+      the browser chrome, which pushes the bottom of the app out of view.
+
+      A page that should fill the viewport without an outer scrollbar (the AI
+      assistant's chat column, inbox-style panes) renders a root of
+      `h-full` and scrolls internally — <main> is a definite height, so `h-full`
+      resolves against it and produces no overflow.
+    */
+    <div className="flex h-dvh overflow-hidden bg-page">
       {sidebarOpen && (
         <aside className="hidden w-[248px] shrink-0 flex-col border-r border-border bg-surface-1 md:flex">
-          <div className="flex h-14 items-center gap-2.5 border-b border-border px-4">
+          <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-border px-4">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-ctl bg-brand text-sm font-semibold text-white">
               {label.charAt(0).toUpperCase()}
             </span>
@@ -137,7 +156,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
 
-          <div className="flex flex-col gap-3 p-3">
+          {/* `shrink-0`: the nav above owns the overflow, so the session
+              footer and upgrade card must keep their full height rather than
+              being compressed when the nav list is long. */}
+          <div className="flex shrink-0 flex-col gap-3 p-3">
             <div className="border-t border-border pt-3 text-xs text-ink-muted">
               <SessionFooter />
             </div>
@@ -157,9 +179,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </aside>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
         <OfflineBanner />
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-surface-1 px-4">
+        {/* Not `sticky` any more: it sits outside the scroll container, so it
+            is pinned by the layout itself. `shrink-0` keeps the 56px bar from
+            being squeezed when the main column is short. */}
+        <header className="z-30 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface-1 px-4">
           {!sidebarOpen && (
             <Button
               variant="ghost"
@@ -218,7 +243,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           </div>
         </header>
-        <main className="flex-1 p-4 pb-20 md:p-6 md:pb-8">{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto p-4 pb-20 md:p-6 md:pb-8">
+          {children}
+        </main>
       </div>
 
       {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}
