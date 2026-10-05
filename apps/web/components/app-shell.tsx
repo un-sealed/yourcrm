@@ -18,11 +18,12 @@ import { useUiStore, useWorkspaceStore } from "@/lib/store"
  * docs/design/DASHBOARD-REDESIGN.md §2 — `--surface-2` search field, ⌘K
  * hint, theme toggle, bell and avatar.
  *
- * The sidebar itself has since departed from §2, which specified a 248px
- * `--surface-1` column with a `--brand-soft` active row: it is now a dark
- * slab on its own `--nav-*` scale (see sidebar.tsx for why). What survives
- * from §2 is the "Upgrade to Premium" card pinned at the bottom, still the
- * ONE gradient allowed in the product.
+ * The shell now composes as floating panels on the page canvas (the
+ * reference layouts the sidebar is built from): the nav column and the
+ * content column are both rounded cards separated by a gutter of `--page`.
+ * The sidebar itself carries its own design notes — see sidebar.tsx. What
+ * survives from §2 here is the "Upgrade to Premium" card pinned at the
+ * bottom of the sidebar, still the ONE gradient allowed in the product.
  */
 
 const CREATE_LINKS = [
@@ -71,11 +72,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       assistant's chat column, inbox-style panes) renders a root of
       `h-full` and scrolls internally — <main> is a definite height, so `h-full`
       resolves against it and produces no overflow.
-    */
-    <div className="flex h-dvh overflow-hidden bg-page">
-      <Sidebar expanded={sidebarOpen} onToggle={toggleSidebar} workspaceLabel={label} />
 
-      <div className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
+      The `p-3`/`gap-3` gutters are what make the panels float: both columns
+      are rounded cards, and the page background shows through between them.
+    */
+    <div className="flex h-dvh gap-3 overflow-hidden bg-page p-3">
+      <Sidebar
+        expanded={sidebarOpen}
+        onToggle={toggleSidebar}
+        onSearch={() => setPaletteOpen(true)}
+        workspaceLabel={label}
+      />
+
+      <div className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden rounded-card border border-border bg-page shadow-float">
         <OfflineBanner />
         {/* Not `sticky` any more: it sits outside the scroll container, so it
             is pinned by the layout itself. `shrink-0` keeps the 56px bar from

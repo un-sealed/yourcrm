@@ -18,8 +18,10 @@ type MeResponse = { data: { user: { email: string; name?: string | null } } }
  * On the collapsed rail this degrades to the avatar alone; the name and email
  * move into its tooltip rather than being dropped.
  *
- * Wears the `nav-*` scale rather than `surface`/`ink`: it sits on the dark
- * navigation slab, which does not flip with the theme (see sidebar.tsx).
+ * Wears the `nav-*` scale rather than `surface`/`ink`: it sits on the tinted
+ * navigation panel, which is a step away from the page in both themes (see
+ * sidebar.tsx). The avatar borrows the active-pill treatment — a raised white
+ * disc with a hairline — so it reads as the anchor of the footer column.
  */
 export function SidebarUser({ expanded }: { expanded: boolean }) {
   const router = useRouter()
@@ -102,7 +104,7 @@ export function SidebarUser({ expanded }: { expanded: boolean }) {
         <span
           role="img"
           aria-label={`Signed in as ${user.name}`}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-nav-hover text-sm font-semibold text-nav-brand"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-nav-active text-sm font-semibold text-nav-brand ring-1 ring-nav-border"
         >
           {initial}
         </span>
@@ -115,7 +117,7 @@ export function SidebarUser({ expanded }: { expanded: boolean }) {
       <span
         role="img"
         aria-label={`Signed in as ${user.name}`}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-nav-hover text-sm font-semibold text-nav-brand"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-nav-active text-sm font-semibold text-nav-brand ring-1 ring-nav-border"
       >
         {initial}
       </span>

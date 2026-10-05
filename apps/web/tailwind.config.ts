@@ -29,9 +29,10 @@ const config: Config = {
           muted: "var(--text-muted)",
         },
         border: { DEFAULT: "var(--border)", strong: "var(--border-strong)" },
-        // The navigation slab's own scale. Deliberately NOT an alias onto
-        // `surface`/`ink`: the sidebar is a dark material in both themes, so
-        // it cannot inherit tokens that flip with the theme.
+        // The navigation panel's own scale. Deliberately NOT an alias onto
+        // `surface`/`ink`: the sidebar is a tinted ground with a raised active
+        // pill (see globals.css), and naming it separately keeps nav styling
+        // from drifting into page styling.
         nav: {
           DEFAULT: "var(--nav-bg)",
           hover: "var(--nav-hover)",
@@ -114,6 +115,9 @@ const config: Config = {
         card: "var(--shadow-card)",
         panel: "var(--shadow-card)",
         pop: "var(--shadow-pop)",
+        // Floating chrome (sidebar.tsx): the nav panel card + the active pill.
+        float: "var(--shadow-nav-panel)",
+        pill: "var(--shadow-nav-pill)",
       },
     },
   },

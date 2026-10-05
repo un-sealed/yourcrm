@@ -54,19 +54,26 @@
     --series-3: #14b8a6;
     --series-4: #7c3aed;
     --series-5: #e11d48;
-    /* Navigation slab (sidebar.tsx). A constant dark material in BOTH themes,
-       so it is not derived from --surface-*: against the light page it reads as
-       a distinct chrome zone rather than another card, which is what lets the
-       content area carry all the colour. --nav-brand is a lifted blue because
-       --brand (#2563eb) has ~2:1 contrast on this slab and is unreadable. */
-    --nav-bg: #12151c;
-    --nav-hover: #1b2029;
-    --nav-active: #232936;
-    --nav-border: #232833;
-    --nav-ink: #f0f2f6;
-    --nav-ink-2: #9aa3b2;
-    --nav-ink-muted: #838c9c;
-    --nav-brand: #60a5fa;
+    /* Navigation panel (sidebar.tsx). A floating, WARM-tinted ground — the
+       celoxis-style reference sits on warm greys rather than cool blues, and
+       that temperature is most of its softness. Deliberately NOT --surface-1
+       white: the active row is a white pill lifted off this ground by a
+       shadow, so the ground must sit a step darker than white for the
+       elevation to read (tone alone was exactly what the earlier light
+       sidebars died of). Inks are warm to match the ground; --nav-brand can
+       be the plain --brand value because the ground is light. */
+    --nav-bg: #ecebe7;
+    --nav-hover: rgb(255 255 255 / 0.65);
+    --nav-active: #ffffff;
+    --nav-border: #e3e1db;
+    --nav-ink: #1c1a17;
+    --nav-ink-2: #5d5a54;
+    --nav-ink-muted: #8f8b84;
+    --nav-brand: #2563eb;
+    /* Soft top light on the panel — the "studio light" the reference layouts
+       sit under. Decorative chrome, confined to the sidebar exactly like the
+       upgrade-card gradient. */
+    --nav-glow: radial-gradient(120% 60% at 50% 0%, rgb(255 255 255 / 0.95) 0%, rgb(255 255 255 / 0) 65%);
 
     /* Radius & shadow */
     --radius-card: 14px;
@@ -74,6 +81,9 @@
     --radius-pill: 999px;
     --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
     --shadow-pop: 0 8px 24px rgb(16 24 40 / 0.1), 0 2px 6px rgb(16 24 40 / 0.06);
+    /* Floating chrome: the nav panel card and the active pill inside it. */
+    --shadow-nav-panel: 0 1px 2px rgb(16 24 40 / 0.04), 0 10px 28px rgb(16 24 40 / 0.07);
+    --shadow-nav-pill: 0 1px 2px rgb(16 24 40 / 0.08), 0 4px 12px rgb(16 24 40 / 0.08);
   }
 
   /* OS-dark default: applies only when no explicit toggle choice wins. */
@@ -94,17 +104,17 @@
       --series-3: #0d9488;
       --series-4: #8b5cf6;
       --series-5: #f43f5e;
-      /* The slab stays dark, but drops BELOW --page (#0e1013) instead of sitting
-         above it — otherwise it would be within a shade of the page and the
-         navigation would lose its edge entirely. */
-      --nav-bg: #0a0c10;
-      --nav-hover: #14181f;
-      --nav-active: #1c212a;
-      --nav-border: #1b2027;
+      /* The panel floats like any card: one step ABOVE --page (#0e1013) with
+         the same structure as light — tinted ground, raised active pill. */
+      --nav-bg: #16191f;
+      --nav-hover: #1e232b;
+      --nav-active: #272d38;
+      --nav-border: #242a33;
       --nav-ink: #f0f2f6;
       --nav-ink-2: #9aa3b2;
       --nav-ink-muted: #838c9c;
       --nav-brand: #60a5fa;
+      --nav-glow: radial-gradient(120% 60% at 50% 0%, rgb(255 255 255 / 0.05) 0%, rgb(255 255 255 / 0) 65%);
     }
 
     html {
@@ -130,17 +140,17 @@
     --series-3: #0d9488;
     --series-4: #8b5cf6;
     --series-5: #f43f5e;
-    /* The slab stays dark, but drops BELOW --page (#0e1013) instead of sitting
-       above it — otherwise it would be within a shade of the page and the
-       navigation would lose its edge entirely. */
-    --nav-bg: #0a0c10;
-    --nav-hover: #14181f;
-    --nav-active: #1c212a;
-    --nav-border: #1b2027;
+    /* The panel floats like any card: one step ABOVE --page (#0e1013) with
+       the same structure as light — tinted ground, raised active pill. */
+    --nav-bg: #16191f;
+    --nav-hover: #1e232b;
+    --nav-active: #272d38;
+    --nav-border: #242a33;
     --nav-ink: #f0f2f6;
     --nav-ink-2: #9aa3b2;
     --nav-ink-muted: #838c9c;
     --nav-brand: #60a5fa;
+    --nav-glow: radial-gradient(120% 60% at 50% 0%, rgb(255 255 255 / 0.05) 0%, rgb(255 255 255 / 0) 65%);
   }
 
   /* Explicit light wins over everything, including an OS-dark media match. */
@@ -161,19 +171,26 @@
     --series-3: #14b8a6;
     --series-4: #7c3aed;
     --series-5: #e11d48;
-    /* Navigation slab (sidebar.tsx). A constant dark material in BOTH themes,
-       so it is not derived from --surface-*: against the light page it reads as
-       a distinct chrome zone rather than another card, which is what lets the
-       content area carry all the colour. --nav-brand is a lifted blue because
-       --brand (#2563eb) has ~2:1 contrast on this slab and is unreadable. */
-    --nav-bg: #12151c;
-    --nav-hover: #1b2029;
-    --nav-active: #232936;
-    --nav-border: #232833;
-    --nav-ink: #f0f2f6;
-    --nav-ink-2: #9aa3b2;
-    --nav-ink-muted: #838c9c;
-    --nav-brand: #60a5fa;
+    /* Navigation panel (sidebar.tsx). A floating, WARM-tinted ground — the
+       celoxis-style reference sits on warm greys rather than cool blues, and
+       that temperature is most of its softness. Deliberately NOT --surface-1
+       white: the active row is a white pill lifted off this ground by a
+       shadow, so the ground must sit a step darker than white for the
+       elevation to read (tone alone was exactly what the earlier light
+       sidebars died of). Inks are warm to match the ground; --nav-brand can
+       be the plain --brand value because the ground is light. */
+    --nav-bg: #ecebe7;
+    --nav-hover: rgb(255 255 255 / 0.65);
+    --nav-active: #ffffff;
+    --nav-border: #e3e1db;
+    --nav-ink: #1c1a17;
+    --nav-ink-2: #5d5a54;
+    --nav-ink-muted: #8f8b84;
+    --nav-brand: #2563eb;
+    /* Soft top light on the panel — the "studio light" the reference layouts
+       sit under. Decorative chrome, confined to the sidebar exactly like the
+       upgrade-card gradient. */
+    --nav-glow: radial-gradient(120% 60% at 50% 0%, rgb(255 255 255 / 0.95) 0%, rgb(255 255 255 / 0) 65%);
   }
 
   * {
@@ -238,5 +255,13 @@
   :focus-visible {
     outline: 2px solid var(--border-strong);
     outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /* Panel top light (sidebar.tsx) — value lives in the --nav-glow token so
+     it flips with the theme like every other nav surface property. */
+  .nav-glow {
+    background-image: var(--nav-glow);
   }
 }
